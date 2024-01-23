@@ -8,16 +8,22 @@ def split_lexemes(line):
     tmpstr = ""
     for ch in line:
         if is_separator(ch):
-            if not tmpstr.isspace():
-                lexemes.append(tmpstr)
+            if not tmpstr.isspace() and tmpstr != "":
+                lexemes.append(str(tmpstr))
             tmpstr = ""
+        else:
+            tmpstr += ch
+        if ch == '(' or ch == ')':
+            lexemes.append(str(ch))
     return lexemes
 
 if __name__ == "__main__":
-    file_input = open("input.txt", "r")
-    lines = file_input.readlines()
-    file_input.close()
+    lines = [
+        "(print\n",
+        "\t(+ 5 bla))"
+    ]
 
     for line in lines:
         lst = split_lexemes(line)
         print(lst)
+    print("done")
