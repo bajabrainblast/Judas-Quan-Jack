@@ -1,2 +1,4 @@
+; pretest
 (print
     (+ 5 bla))
+; posttest

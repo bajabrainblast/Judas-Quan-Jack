@@ -1,5 +1,8 @@
-definitions 
+
 %% 
-rules 
+
+"(" { printf("l paren"); }
+")" { printf("r paren"); }
+^; { while(input() != '\n'); }
+
 %% 
-user routines
