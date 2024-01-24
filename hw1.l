@@ -14,7 +14,6 @@ void lineSkip();
 "\n" { count++; }
 [^()"\n"" "]+ { myPrint(); }
 
-
 %% 
 
 int main() {
@@ -24,6 +23,7 @@ int main() {
 
 void myPrint() {
     printf("line %i: ", count);
+    printf(description());
     printf("TYPE: %.*s\n", yyleng, yytext);
     return;
 }
@@ -31,4 +31,8 @@ void myPrint() {
 void lineSkip() {
     while(input() != '\n');
     return;
+}
+
+char* description() {
+    if (strncmp(yytext, ))
 }
