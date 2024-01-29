@@ -1,6 +1,6 @@
 %{
    #include <stdio.h>
-   void mp();
+   void mp(char *type);
 %}
 
 %%
