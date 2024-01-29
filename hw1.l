@@ -22,7 +22,7 @@ print {mp("program entry point");}
 "\n" {yylineno ++;}
 ;(" "|.)* {}
 [ ]*  {}
-. {mp("error\n");}
+. {mp("error");}
 %%
 
 int main(){
