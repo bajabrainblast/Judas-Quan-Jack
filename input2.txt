@@ -1,0 +1,6 @@
+; pretest
+(print
+    (+ 5
+    1bla))
+; posttest
+; extra comment
