@@ -1,0 +1,26 @@
+-4784
+482
+< 3
+> 4
+<= 5
+>= 6
+x + y
+x - y
+x * y
+x div y
+y mod x
+define-fun
+get-int
+get-bool
+true
+false
+and
+or
+not
+if
+let
+int
+bool
+print
+1x
+()
