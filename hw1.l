@@ -19,10 +19,9 @@ print {mp("program entry point");}
 [a-zA-Z]+[0-9a-zA-Z]*   {mp("variable/function name");}
 "("   {mp("left parenthesis");}
 ")"   {mp("right parenthesis");}
-"\n" {yylineno ++;}
+"\n" {yylineno++;}
 ;(" "|.)* {}
 [ ]*  {}
-. {mp("error");}
 %%
 
 int main(){
@@ -31,6 +30,6 @@ int main(){
 }
 
 void mp(char* type) {
-    printf("line %3i: %20s: ", yylineno, type);
+    printf("line %3i: %30s: ", yylineno, type);
     printf("%s\n", yytext);
 }
