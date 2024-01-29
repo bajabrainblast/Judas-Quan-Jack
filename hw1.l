@@ -1,5 +1,6 @@
 %{
    #include <stdio.h>
+   void mp();
 %}
 
 %%
@@ -27,4 +28,9 @@ print {mp("program entry point");}
 int main(){
    yylex();
    return 0;
+}
+
+void mp(char* type) {
+    printf("line %3i: %20s: ", yylineno, type);
+    printf("%s\n", yytext);
 }
