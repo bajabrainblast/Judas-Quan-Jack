@@ -1,18 +1,27 @@
 %{
-#include <stdio.h>
-int count = 1;
-void myPrint();
-void lineSkip();
+void mp();
 %}
 
 %% 
 
-" " { ; }
-^; { lineSkip(); }
-"\(" { myPrint(); }
-"\)" { myPrint(); }
-"\n" { count++; }
-[^()"\n"" "]+ { myPrint(); }
+" "|"\t" { ; }
+"\n" { yylineno++; }
+^;.* { ; }
+"\(" { mp("left parenthesis"); }
+"\)" { mp("right parenthesis"); }
+-?[0-9]* { mp("arith const"); }
+[<>"<="">="=] { mp("arith comparison"); }
+[+\-\*] { mp("arith operation"); }
+(div)|(mod) { mp("arith operation"); }
+(define-fun) { mp("func definition"); }
+(get-int)|(get-bool) { mp("predefined func"); }
+print { mp("program entry point"); }
+(true)|(false) { mp("boolean const"); }
+(and)|(or)|(not) { mp("boolean operator"); }
+if { mp("conditional operator"); }
+let { mp("local variable decl"); }
+(int)|(bool) { mp("var/func type"); }
+[a-zA-Z]+[a-zA-Z0-9]* { mp("var/func name"); }
 
 %% 
 
@@ -21,18 +30,7 @@ int main() {
     return 0;
 }
 
-void myPrint() {
-    printf("line %i: ", count);
-    printf(description());
-    printf("TYPE: %.*s\n", yyleng, yytext);
-    return;
-}
-
-void lineSkip() {
-    while(input() != '\n');
-    return;
-}
-
-char* description() {
-    if (strncmp(yytext, ))
+void mp(char* type) {
+    printf("line %3i: %20s: ", yylineno, type);
+    printf("%s\n", yytext);
 }
