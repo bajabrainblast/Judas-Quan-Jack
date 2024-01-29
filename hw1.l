@@ -1,33 +1,33 @@
 %{
-void mp();
+   #include <stdio.h>
+   void mp();
 %}
 
-%% 
+%%
+-?[0-9]+ {mp("arithmetic const");}
+("<"|">"|"="|"<="|">=")   {mp("arithmetic comparison");}
+("+"|"-"|"*"|"div"|"mod") {mp("arithmetic operation");}
+define-fun {mp("function definition keyword");}
+(get-int|get-bool)  {mp("predefined function");}
+(true|false)  {mp("boolean constant");}
+(and|or|not)  {mp("boolean operator");}
+if {mp("boolean operator");}
+let   {mp("local variable declaration");}
+(int|bool) {mp("variable/function type");}
+print {mp("program entry point");}
+[0-9]+[a-zA-Z]+[0-9a-zA-Z]*   {mp("error");}
+[a-zA-Z]+[0-9a-zA-Z]*   {mp("variable/function name");}
+"("   {mp("left parenthesis");}
+")"   {mp("right parenthesis");}
+"\n" {yylineno ++;}
+;(" "|.)* {}
+[ ]*  {}
+. {mp("error\n");}
+%%
 
-" "|"\t" { ; }
-"\n" { yylineno++; }
-^;.* { ; }
-"\(" { mp("left parenthesis"); }
-"\)" { mp("right parenthesis"); }
--?[0-9]* { mp("arith const"); }
-[<>"<="">="=] { mp("arith comparison"); }
-[+\-\*] { mp("arith operation"); }
-(div)|(mod) { mp("arith operation"); }
-(define-fun) { mp("func definition"); }
-(get-int)|(get-bool) { mp("predefined func"); }
-print { mp("program entry point"); }
-(true)|(false) { mp("boolean const"); }
-(and)|(or)|(not) { mp("boolean operator"); }
-if { mp("conditional operator"); }
-let { mp("local variable decl"); }
-(int)|(bool) { mp("var/func type"); }
-[a-zA-Z]+[a-zA-Z0-9]* { mp("var/func name"); }
-
-%% 
-
-int main() {
-    yylex();
-    return 0;
+int main(){
+   yylex();
+   return 0;
 }
 
 void mp(char* type) {
