@@ -1,0 +1,3 @@
+de def define-fun
+-1 - 23
+true tr
