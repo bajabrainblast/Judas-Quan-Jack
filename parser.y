@@ -11,27 +11,32 @@
 
 %%
 
-program: expr
-		| program expr
+program: '(' FUNCDEF ID decllist TYPE expr ')'
+		| '(' PEP expr ')'
 
-expr: CONST
+decllist: 
+		 | '(' ID TYPE ')' decllist
+
+expr: term | fla
 
 multexpr:
-        | multexpr expr
+        | expr multexpr
 
 term: CONST
     | ID
     | GETINT
-    | (MAOP term multterm)
-    | (AOP term term)
-    | (IF fla term term)
-    | (ID multexpr)
-    | (LET (ID expr) term)
+    | '(' MAOP term multterm ')'
+    | '(' AOP term term ')'
+    | '(' IF fla term term ')'
+    | '(' ID multexpr ')'
+    | '(' LET '(' ID expr ')' term ')'
 
 multterm: term 
         | term multterm
+
 multfla : fla 
-	| fla mfla 
+	| fla multfla 
+
 fla : BOOL
 	| ID
 	| '(' GETBOOL ')'
@@ -39,7 +44,7 @@ fla : BOOL
 	| '(' NOT fla ')'
 	| '(' BOP fla multfla ')'
 	| '(' IF fla fla fla ')'
-	| '(' ID expr ')'
+	| '(' ID multexpr ')'
 	| '(' LET '(' ID expr ')' fla ')'
 
 %%
