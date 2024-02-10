@@ -1,0 +1,5 @@
+(define-fun t1 int (= (+ 1 (- 2 3)) 6))
+; Test comment enetered here 34
+(define-fun t2 int (+ 1 (get-int)))
+(define-fun t3 bool (and (t1) (not (t1))))
+(print (or (and (t1) (t2)) (t3))

@@ -12,7 +12,9 @@
 %%
 
 program: '(' FUNCDEF ID decllist TYPE expr ')'
+		| '(' FUNCDEF ID decllist TYPE expr ')' program
 		| '(' PEP expr ')'
+		| '(' PEP expr ')' program
 
 decllist: 
 		 | '(' ID TYPE ')' decllist
