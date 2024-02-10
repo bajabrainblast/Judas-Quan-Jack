@@ -8,12 +8,14 @@
 
 -?[0-9]+                      { mp("arithmetic const"); return CONST;}
 ("<"|">"|"="|"<="|">=")       { mp("arithmetic comparison"); return COMP;}
-("+"|"-"|"*"|"div"|"mod")     { mp("arithmetic operation"); return AOP;}
+("-"|"div"|"mod")             { mp("arithmetic operation"); return AOP;}
+("+"|"*")                     { mp("arithmetic operation"); return MAOP;}
 define-fun                    { mp("function definition keyword"); return FUNCDEF;}
 get-int                       { mp("get-int func"); return GETINT;}
 get-bool                      { mp("get-bool func"); return GETBOOL;}
 (true|false)                  { mp("boolean constant"); return BOOL;}
-(and|or|not)                  { mp("boolean operator"); return BOP;}
+(and|or)                      { mp("boolean operator"); return BOP;}
+not                           { mp("boolean operator"); return NOT;}
 if                            { mp("boolean operator"); return IF;}
 let                           { mp("local variable declaration"); return LET;}
 (int|bool)                    { mp("variable/function type"); return TYPE;}
