@@ -7,7 +7,7 @@
 
 %start program
 
-%token AOP COMP FUNCDEF GETINT GETBOOL BOOL BOP IF LET TYPE PEP ID CONST
+%token AOP MAOP COMP FUNCDEF GETINT GETBOOL BOOL BOP IF NOT LET TYPE PEP ID CONST
 
 %%
 
@@ -30,6 +30,17 @@ term: CONST
 
 multterm: term 
         | term multterm
+multfla : fla 
+	| fla mfla 
+fla : BOOL
+	| ID
+	| '(' GETBOOL ')'
+	| '(' COMP term term ')'
+	| '(' NOT fla ')'
+	| '(' BOP fla multfla ')'
+	| '(' IF fla fla fla ')'
+	| '(' ID expr ')'
+	| '(' LET '(' ID expr ')' fla ')'
 
 %%
 
