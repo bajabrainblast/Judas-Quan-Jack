@@ -2,4 +2,4 @@
 ; Test comment enetered here 34
 (define-fun t2 int (+ 1 (get-int)))
 (define-fun t3 bool (and (t1) (not (t1))))
-(print (or (and (t1) (t2)) (t3))
+(print (or (and (t1) (t2)) (t3)))

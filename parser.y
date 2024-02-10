@@ -26,7 +26,7 @@ multexpr:
 
 term: CONST
     | ID
-    | GETINT
+    | '(' GETINT ')'
     | '(' MAOP term multterm ')'
     | '(' AOP term term ')'
     | '(' IF fla term term ')'
