@@ -16,6 +16,21 @@ program: expr
 
 expr: CONST
 
+multexpr:
+        | multexpr expr
+
+term: CONST
+    | ID
+    | GETINT
+    | (MAOP term multterm)
+    | (AOP term term)
+    | (IF fla term term)
+    | (ID multexpr)
+    | (LET (ID expr) term)
+
+multterm: term 
+        | term multterm
+
 %%
 
 int main(void){
