@@ -10,7 +10,8 @@
 ("<"|">"|"="|"<="|">=")       { mp("arithmetic comparison"); return COMP;}
 ("+"|"-"|"*"|"div"|"mod")     { mp("arithmetic operation"); return AOP;}
 define-fun                    { mp("function definition keyword"); return FUNCDEF;}
-(get-int|get-bool)            { mp("predefined function"); return PREDEFFUNC;}
+get-int                       { mp("get-int func"); return GETINT;}
+get-bool                      { mp("get-bool func"); return GETBOOL;}
 (true|false)                  { mp("boolean constant"); return BOOL;}
 (and|or|not)                  { mp("boolean operator"); return BOP;}
 if                            { mp("boolean operator"); return IF;}
