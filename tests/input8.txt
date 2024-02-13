@@ -1,0 +1,2 @@
+; Test comment enetered here
+(define-fun t3 bool (and (<= (+ (t1) (t2)) (t2)) (not (t1))))
