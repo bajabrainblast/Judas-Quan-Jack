@@ -31,6 +31,6 @@ print                         { mp("program entry point"); return PEP;}
 %%
 
 void mp(char* type) {
-    printf("line %3i: %30s: ", yylineno, type);
-    printf("%s\n", yytext);
+    //printf("line %3i: %30s: ", yylineno, type);
+    //printf("%s\n", yytext);
 }

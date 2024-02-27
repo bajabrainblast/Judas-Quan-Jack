@@ -5,6 +5,8 @@
 	extern char *yytext;
     int yylex(void);
     void yyerror(char *msg);
+	int current;
+	void pt(int);
 %}
 
 %start program
@@ -13,28 +15,29 @@
 
 %%
 
-program: '(' PEP expr ')' { insert_node("PEP", 1); }
-	| '(' FUNCDEF ID decllist TYPE expr ')' program { insert_node("FUNCDEF", 1); }
+program: '(' PEP expr ')' 				{ insert_node("PEP", 0); pt(1); }
+	| '(' FUNCDEF ID decllist TYPE expr ')' program { insert_node("FUNCDEF", 0); pt(2); }
 
 decllist: 
-	| '(' ID TYPE ')' decllist
+	| '(' ID TYPE ')' decllist 			{ insert_child(insert_node("decllist", 0)); pt(3); }
 
-expr: CONST
-	| ID
-	| BOOL
-	| '(' GETBOOL ')'
-	| '(' GETINT ')'
-	| '(' NOT expr ')'
-	| '(' BOP expr expr exprlist ')'
-	| '(' MAOP expr expr exprlist ')'
-	| '(' AOP expr expr ')'
-	| '(' COMP expr expr ')'
-	| '(' IF expr expr expr ')'
-	| '(' ID exprlist ')'
-	| '(' LET '(' ID expr ')' expr ')'
+expr: CONST 							{ insert_child(insert_node("const", 0)); pt(4); }
+	| ID 								{ insert_child(insert_node("id", 0)); pt(5); }
+	| BOOL 								{ insert_child(insert_node("bool", 0)); pt(6); }
+	| '(' GETBOOL ')' 					{ insert_child(insert_node("getbool", 0)); pt(7); }
+	| '(' GETINT ')' 					{ insert_child(insert_node("getint", 0)); pt(8); }
+	| '(' NOT expr ')'					{ insert_child(insert_node("not", 0)); pt(9); }
+	| '(' BOP expr expr exprlist ')'	{ insert_child(insert_node("bop", 0)); pt(10); }
+	| '(' MAOP expr expr exprlist ')'	{ current = insert_node("maop", 0); insert_child(current); pt(11); }
+	| '(' AOP expr expr ')' 			{ insert_child(insert_node("aop", 0)); pt(12); }
+	| '(' COMP expr expr ')' 			{ insert_child(insert_node("comp", 0)); pt(13); }
+	| '(' IF expr expr expr ')' 		{ insert_child(insert_node("if", 0)); pt(14); } 
+	| '(' ID exprlist ')' 				{ insert_child(insert_node("id expr", 0)); pt(15); }
+	| '(' LET '(' ID expr ')' expr ')' 	{ insert_child(insert_node("let", 0)); pt(16); }
 
 exprlist:
-	| expr exprlist
+	| expr exprlist 					{ insert_child(insert_node("exprlist", 0)); pt(17); }
+
 %%
 
 int yywrap() {
@@ -43,4 +46,8 @@ int yywrap() {
 
 void yyerror(char *msg){
     fprintf(stderr, "Error: %s\n", msg);
+}
+
+void pt(int i) {
+	printf("%i\n", i);
 }

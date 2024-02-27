@@ -3,3 +3,4 @@ lex.yy.c
 *.bak
 y.tab.c
 y.tab.h
+comp
