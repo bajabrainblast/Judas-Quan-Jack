@@ -1,0 +1,7 @@
+digraph print {
+ 1 [label="PEP", fontname="monospace"];
+ 2 [label="FUNCDEF", fontname="monospace"];
+ 3 [label="FUNCDEF", fontname="monospace"];
+ 4 [label="FUNCDEF", fontname="monospace"];
+ }
+ 

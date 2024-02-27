@@ -1,6 +1,8 @@
 %{
     #include <stdio.h>
     #include "y.tab.h"
+	#include "ast.h"
+	extern char *yytext;
     int yylex(void);
     void yyerror(char *msg);
 %}
@@ -11,8 +13,8 @@
 
 %%
 
-program: '(' PEP expr ')'
-	| '(' FUNCDEF ID decllist TYPE expr ')' program
+program: '(' PEP expr ')' { insert_node("PEP", 1); }
+	| '(' FUNCDEF ID decllist TYPE expr ')' program { insert_node("FUNCDEF", 1); }
 
 decllist: 
 	| '(' ID TYPE ')' decllist
@@ -35,9 +37,8 @@ exprlist:
 	| expr exprlist
 %%
 
-int main(void){
-    yyparse();
-    return 0;
+int yywrap() {
+    return 1;
 }
 
 void yyerror(char *msg){
