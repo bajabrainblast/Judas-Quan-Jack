@@ -2,23 +2,13 @@
     #include <stdio.h>
     #include "y.tab.h"
 	#include "ast.h"
+   #include "stack.h"
 	extern char *yytext;
+   extern struct stack st;
     int yylex(void);
     void yyerror(char *msg);
 	int current;
 	void pt(int);
-   struct node {
-      int val;
-      struct node *prev;
-      struct node *next;
-   };
-   struct stack {
-      struct node *top;
-   };
-   void push(struct stack *st, int val);
-   int pop(struct stack *st);
-   struct stack st;
-   st.top = NULL;
 %}
 
 %start program
@@ -60,35 +50,6 @@ void yyerror(char *msg){
     fprintf(stderr, "Error: %s\n", msg);
 }
 
-void push(struct stack *st, int val) {
-   struct node *new_node = (struct node *) malloc(sizeof(struct node));
-   new_node->val = val;
-   if (st->top == NULL) {
-      st->top = new_node;
-      new_node->prev = NULL;
-      new_node->next = NULL;
-   }
-   else {
-      new_node->prev = st->top;
-      st->top->next = new_node;
-      new_node->next = NULL;
-      st->top = new_node;
-   }
-}
-
-int pop(struct stack *st) {
-   if (st->top == NULL) {
-      return (-1);
-   }
-   else {
-      struct node *temp = st->top;
-      int id = temp->val;
-      st->top = temp->prev;
-      st->top->next = NULL;
-      free(temp);
-      return id;
-   }
-}
 
 void pt(int i) {
 	printf("%i\n", i);
