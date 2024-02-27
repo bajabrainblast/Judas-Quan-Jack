@@ -27,7 +27,8 @@ int pop(struct stack *st) {
       struct node *temp = st->top;
       int id = temp->val;
       st->top = temp->prev;
-      st->top->next = NULL;
+      if (st->top != NULL)
+         st->top->next = NULL;
       free(temp);
       return id;
    }
