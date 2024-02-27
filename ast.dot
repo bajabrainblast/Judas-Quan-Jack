@@ -1,10 +1,18 @@
 digraph print {
  1 [label="const", fontname="monospace"];
- 2 [label="id", fontname="monospace"];
- 3 [label="aop", fontname="monospace", style=filled, fillcolor=mintcream];
- 3->2
- 3->1
- 4 [label="PEP", fontname="monospace", style=filled, fillcolor=mintcream];
- 4->3
+ 2 [label="const", fontname="monospace"];
+ 3 [label="const", fontname="monospace"];
+ 4 [label="const", fontname="monospace"];
+ 5 [label="maop", fontname="monospace", style=filled, fillcolor=mintcream];
+ 5->4
+ 5->3
+ 5->2
+ 6 [label="const", fontname="monospace"];
+ 7 [label="maop", fontname="monospace", style=filled, fillcolor=mintcream];
+ 7->6
+ 7->5
+ 7->1
+ 8 [label="PEP", fontname="monospace", style=filled, fillcolor=mintcream];
+ 8->7
  }
  

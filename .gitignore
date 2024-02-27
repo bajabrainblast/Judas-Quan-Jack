@@ -5,5 +5,7 @@ y.tab.c
 y.tab.h
 comp
 stack.o
+ast.dot
+ast.pdf
 
 *.swp
