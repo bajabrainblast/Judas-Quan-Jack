@@ -11,44 +11,28 @@
 
 %%
 
-program: '(' FUNCDEF ID decllist TYPE expr ')'
-		| '(' FUNCDEF ID decllist TYPE expr ')' program
-		| '(' PEP expr ')'
-		| '(' PEP expr ')' program
+program: '(' PEP expr ')'
+	| '(' FUNCDEF ID decllist TYPE expr ')' program
 
 decllist: 
-		 | '(' ID TYPE ')' decllist
+	| '(' ID TYPE ')' decllist
 
-expr: term | fla
-
-multexpr:
-        | expr multexpr
-
-term: CONST
-    | ID
-    | '(' GETINT ')'
-    | '(' MAOP term multterm ')'
-    | '(' AOP term term ')'
-    | '(' IF fla term term ')'
-    | '(' ID multexpr ')'
-    | '(' LET '(' ID expr ')' term ')'
-
-multterm: term 
-        | term multterm
-
-multfla : fla 
-	| fla multfla 
-
-fla : BOOL
+expr: CONST
 	| ID
+	| BOOL
 	| '(' GETBOOL ')'
-	| '(' COMP term term ')'
-	| '(' NOT fla ')'
-	| '(' BOP fla multfla ')'
-	| '(' IF fla fla fla ')'
-	| '(' ID multexpr ')'
-	| '(' LET '(' ID expr ')' fla ')'
+	| '(' GETINT ')'
+	| '(' NOT expr ')'
+	| '(' BOP expr expr exprlist ')'
+	| '(' MAOP expr expr exprlist ')'
+	| '(' AOP expr expr ')'
+	| '(' COMP expr expr ')'
+	| '(' IF expr expr expr ')'
+	| '(' ID exprlist ')'
+	| '(' LET '(' ID expr ')' expr ')'
 
+exprlist:
+	| expr exprlist
 %%
 
 int main(void){
