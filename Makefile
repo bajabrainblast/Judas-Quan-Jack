@@ -1,13 +1,15 @@
-default: parser lexer compile
+CC	= gcc
+YACC= yacc
+LEX	= lex
 
-lexer: scanner.l
-	lex scanner.l
+comp:	y.tab.c lex.yy.c ast.c comp.c
+	$(CC) lex.yy.c y.tab.c ast.c comp.c -o comp
 
-parser: parser.y
-	yacc -d parser.y
+y.tab.c: parser.y
+	$(YACC) -d parser.y
 
-compile: y.tab.c y.tab.h
-	gcc y.tab.c lex.yy.c -ll
+lex.yy.c: scanner.l y.tab.h
+	$(LEX) scanner.l
 
 clean:
-	rm -rf *.c *.h
+	rm comp lex.yy.c y.tab.c y.tab.h

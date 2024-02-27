@@ -11,50 +11,38 @@
 
 %%
 
-program: '(' FUNCDEF ID decllist TYPE expr ')'
-		| '(' FUNCDEF ID decllist TYPE expr ')' program
-		| '(' PEP expr ')'
-		| '(' PEP expr ')' program
+program: '(' PEP expr ')'
+    | '(' FUNCDEF ID decllist TYPE expr ')' program
 
-decllist: 
-		 | '(' ID TYPE ')' decllist
+decllist:
+    | ID TYPE decllist
 
-expr: term | fla
+// expr: CONST
 
-multexpr:
-        | expr multexpr
+// ifs: IF
+
+expr: term
+    | fla
+    | '(' MAOP term multterm ')'
+    | '(' AOP term term ')'
+    | '(' COMP term term ')'
+    | '(' BOP fla multfla ')'
+    | '(' NOT fla ')'
 
 term: CONST
     | ID
     | '(' GETINT ')'
-    | '(' MAOP term multterm ')'
-    | '(' AOP term term ')'
-    | '(' IF fla term term ')'
-    | '(' ID multexpr ')'
-    | '(' LET '(' ID expr ')' term ')'
 
-multterm: term 
-        | term multterm
+multterm: term
+    | term multterm
 
-multfla : fla 
-	| fla multfla 
+fla: BOOL
+    | '(' GETBOOL ')'
 
-fla : BOOL
-	| ID
-	| '(' GETBOOL ')'
-	| '(' COMP term term ')'
-	| '(' NOT fla ')'
-	| '(' BOP fla multfla ')'
-	| '(' IF fla fla fla ')'
-	| '(' ID multexpr ')'
-	| '(' LET '(' ID expr ')' fla ')'
+multfla: fla
+    | fla multfla
 
 %%
-
-int main(void){
-    yyparse();
-    return 0;
-}
 
 void yyerror(char *msg){
     fprintf(stderr, "Error: %s\n", msg);
