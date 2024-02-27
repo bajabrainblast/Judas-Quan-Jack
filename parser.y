@@ -16,9 +16,9 @@
       struct node *top;
    };
    void push(struct stack *st, int val);
-   int pop(struct stack *st, int val);
+   int pop(struct stack *st);
    struct stack st;
-   st->top = NULL;
+   st.top = NULL;
 %}
 
 %start program
@@ -27,21 +27,21 @@
 
 %%
 
-program: '(' PEP expr ')' 				{ insert_node("PEP", 0); pt(1); }
+program: '(' PEP expr ')' 				{ insert_child(pop(&st)); insert_node("PEP", 0); pt(1); }
 	| '(' FUNCDEF ID decllist TYPE expr ')' program { insert_node("FUNCDEF", 0); pt(2); }
 
 decllist: 
 	| '(' ID TYPE ')' decllist 			{ insert_child(insert_node("decllist", 0)); pt(3); }
 
-expr: CONST 							{ insert_child(insert_node("const", 0)); pt(4); }
-	| ID 								{ insert_child(insert_node("id", 0)); pt(5); }
-	| BOOL 								{ insert_child(insert_node("bool", 0)); pt(6); }
+expr: CONST 							{ push(&st,insert_node("const",0)); pt(4); }
+	| ID 								{ push(&st,insert_node("id",0)); pt(5); }
+	| BOOL 								{ push(&st,insert_node("bool",0)); pt(6); }
 	| '(' GETBOOL ')' 					{ insert_child(insert_node("getbool", 0)); pt(7); }
 	| '(' GETINT ')' 					{ insert_child(insert_node("getint", 0)); pt(8); }
 	| '(' NOT expr ')'					{ insert_child(insert_node("not", 0)); pt(9); }
 	| '(' BOP expr expr exprlist ')'	{ insert_child(insert_node("bop", 0)); pt(10); }
 	| '(' MAOP expr expr exprlist ')'	{ current = insert_node("maop", 0); insert_child(current); pt(11); }
-	| '(' AOP expr expr ')' 			{ insert_child(insert_node("aop", 0)); pt(12); }
+	| '(' AOP expr expr ')' 			{ insert_child(pop(&st)); insert_child(pop(&st)); push(&st,insert_node("aop",0)); pt(12); }
 	| '(' COMP expr expr ')' 			{ insert_child(insert_node("comp", 0)); pt(13); }
 	| '(' IF expr expr expr ')' 		{ insert_child(insert_node("if", 0)); pt(14); } 
 	| '(' ID exprlist ')' 				{ insert_child(insert_node("id expr", 0)); pt(15); }
@@ -76,7 +76,7 @@ void push(struct stack *st, int val) {
    }
 }
 
-int pop(struct stack *st, int val) {
+int pop(struct stack *st) {
    if (st->top == NULL) {
       return (-1);
    }
