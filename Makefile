@@ -15,4 +15,4 @@ stack.o: stack.c stack.h
 	$(CC) -c stack.c
 
 clean: 
-	rm comp lex.yy.c y.tab.c y.tab.h
+	rm comp lex.yy.c y.tab.c y.tab.h stack.o
