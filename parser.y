@@ -1,14 +1,24 @@
 %{
+	/* TO DO
+		need to extract current token and use it instead of placeholder strings for node insertion
+		need to test all productions
+		possible special case for let? 
+	*/
+
     #include <stdio.h>
     #include "y.tab.h"
 	#include "ast.h"
-   #include "stack.h"
+    #include "stack.h"
+
 	extern char *yytext;
-   extern struct stack st;
+    extern struct stack st;
+
     int yylex(void);
     void yyerror(char *msg);
-	int current;
-	void pt(int);
+
+	int extra = 0;
+	void pt(int);				// simple printing func for tracing execution
+	void get_children(int i);	// performs i many of this operation: pop the top id from stack, make that node a child 
 %}
 
 %start program
@@ -39,7 +49,6 @@ expr: CONST 							{ push(&st,insert_node("const",0)); pt(4); }
 
 exprlist:
 	| expr exprlist 					{ insert_child(pop(&st)); pt(17); }
-
 %%
 
 int yywrap() {
@@ -50,7 +59,14 @@ void yyerror(char *msg){
     fprintf(stderr, "Error: %s\n", msg);
 }
 
-
+// comment out the print if unnecessary
 void pt(int i) {
 	printf("%i\n", i);
+}
+
+void get_children(int i) {
+	int j;
+	for (j=0; j<i; j++) {
+		insert_child(pop(&st));
+	}
 }
