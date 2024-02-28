@@ -3,3 +3,6 @@ lex.yy.c
 *.bak
 y.tab.c
 y.tab.h
+ast.dot
+ast.pdf
+comp
