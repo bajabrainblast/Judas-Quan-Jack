@@ -1,3 +1,2 @@
-in
-get
-def
+(define-fun name (v int) int (if (> v 0) (+ 1 2 3) 20))
+(print (name (get-int)))
