@@ -1,5 +1,5 @@
 ; pretest
 (print
-    (+ 5 bla))
+    (div 5 bla))
 ; posttest
 ; extra comment
