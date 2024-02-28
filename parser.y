@@ -45,7 +45,7 @@ expr: CONST 							{ push(&st,insert_node("const",0)); pt(4); }
 	| '(' COMP expr expr ')' 			{ insert_child(pop(&st)); insert_child(pop(&st)); push(&st,insert_node("comp",0)); pt(13); }
 	| '(' IF expr expr expr ')' 		{ insert_child(pop(&st)); insert_child(pop(&st)); insert_child(pop(&st)); push(&st,insert_node("if",0)); pt(14); } 
 	| '(' ID exprlist ')' 				{ push(&st,insert_node("id",0)); pt(15); }
-	| '(' LET '(' ID expr ')' expr ')' 	{ push(&st,insert_node("id",0)); insert_child(pop(&st)); insert_child(pop(&st)); insert_child(pop(&st)); push(&st,insert_node("let",0)); pt(16); }
+	| '(' LET '(' ID expr ')' expr ')' 	{ int id_id = insert_node("id",0); insert_child(id_id); insert_child(pop(&st)); insert_child(pop(&st)); push(&st,insert_node("let",0)); pt(16); }
 
 exprlist:
 	| expr exprlist 					{ insert_child(pop(&st)); pt(17); }
