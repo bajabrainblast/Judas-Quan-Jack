@@ -28,7 +28,7 @@
 %%
 
 program: '(' PEP expr ')' 				{ insert_child(pop(&st)); insert_node("PEP", 0); pt(1); }
-	| '(' FUNCDEF ID decllist TYPE expr ')' program { insert_node("FUNCDEF", 0); pt(2); }
+	| '(' FUNCDEF ID decllist TYPE expr ')' program { int id_id = insert_node("id",0); insert_child(pop(&st)); insert_child(pop(&st)); insert_child(id_id); insert_node("FUNCDEF", 0); pt(2); }
 
 decllist: 
 	| '(' ID TYPE ')' decllist 			{ insert_child(insert_node("decllist", 0)); pt(3); }
