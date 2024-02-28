@@ -23,32 +23,42 @@
 
 %start program
 
-%token AOP MAOP COMP FUNCDEF GETINT GETBOOL BOOL BOP IF NOT LET TYPE PEP ID CONST
+%union {int val; char* str;}
+
+%token FUNCDEF GETINT GETBOOL BOP IF NOT LET TYPE PEP 
+
+%token<str> ID CONST BOOL AOP MAOP COMP 
+
+%type<val> id const bool expr 
 
 %%
 
-program: '(' PEP expr ')' 				{ insert_child(pop(&st)); insert_node("PEP", 0); pt(1); }
-	| '(' FUNCDEF ID decllist TYPE expr ')' program { int id_id = insert_node("id",0); insert_child(pop(&st)); insert_child(pop(&st)); insert_child(id_id); insert_node("FUNCDEF", 0); pt(2); }
+id : ID { $$ = insert_node($1,0);}
+const : CONST { $$ = insert_node($1,0);}
+bool : BOOL { $$ = insert_node($1,0);}
+
+program: '(' PEP expr ')' 				{ insert_child($3); insert_node("PEP", 0); pt(1); }
+	| '(' FUNCDEF id decllist TYPE expr ')' program { insert_child($3); insert_child($6); insert_node("funcdef", 0); pt(2); }
 
 decllist: 
-	| '(' ID TYPE ')' decllist 			{ insert_child(insert_node("decllist", 0)); pt(3); }
+	| '(' id TYPE ')' decllist 			{ insert_child($2); pt(3); }
 
-expr: CONST 							{ push(&st,insert_node("const",0)); pt(4); }
-	| ID 								{ push(&st,insert_node("id",0)); pt(5); }
-	| BOOL 								{ push(&st,insert_node("bool",0)); pt(6); }
-	| '(' GETBOOL ')' 					{ push(&st,insert_node("getbool",0)); pt(7); }
-	| '(' GETINT ')' 					{ push(&st,insert_node("getint",0)); pt(8); }
-	| '(' NOT expr ')'					{ insert_child(pop(&st)); insert_node("not",0); pt(9); }
-	| '(' BOP expr expr exprlist ')'	{ insert_child(pop(&st)); insert_child(pop(&st)); push(&st,insert_node("bop",0)); pt(10); }
-	| '(' MAOP expr expr exprlist ')'	{ insert_child(pop(&st)); insert_child(pop(&st)); push(&st,insert_node("maop",0)); pt(11); }
-	| '(' AOP expr expr ')' 			{ insert_child(pop(&st)); insert_child(pop(&st)); push(&st,insert_node("aop",0)); pt(12); }
-	| '(' COMP expr expr ')' 			{ insert_child(pop(&st)); insert_child(pop(&st)); push(&st,insert_node("comp",0)); pt(13); }
-	| '(' IF expr expr expr ')' 		{ insert_child(pop(&st)); insert_child(pop(&st)); insert_child(pop(&st)); push(&st,insert_node("if",0)); pt(14); } 
-	| '(' ID exprlist ')' 				{ push(&st,insert_node("id",0)); pt(15); }
-	| '(' LET '(' ID expr ')' expr ')' 	{ int id_id = insert_node("id",0); insert_child(id_id); insert_child(pop(&st)); insert_child(pop(&st)); push(&st,insert_node("let",0)); pt(16); }
+expr: const { $$ = $1; pt(4); }
+	| id { $$ = $1; pt(5); }
+	| bool { $$ = $1; pt(6); }
+	| '(' GETBOOL ')' 					{ $$ = insert_node("getbool",0); pt(7); }
+	| '(' GETINT ')' 					{ $$ = insert_node("getint",0); pt(8); }
+	| '(' NOT expr ')'					{ insert_child($3); $$ = insert_node("not",0); pt(9); }
+	| '(' BOP expr expr exprlist ')'	{ insert_child($3); insert_child($4); $$ = insert_node("bop",0); pt(10); }
+	| '(' MAOP expr expr exprlist ')'	{ insert_child($3); insert_child($4); $$ = insert_node($2,0); pt(11); }
+	| '(' AOP expr expr ')' 			{ insert_child($3); insert_child($4); $$ = insert_node($2,0); pt(12); }
+	| '(' COMP expr expr ')' 			{ insert_child($3); insert_child($4); $$ = insert_node($2,0); pt(13); }
+	| '(' IF expr expr expr ')' 		{ insert_child($3); insert_child($4); insert_child($5); $$ = insert_node("if",0); pt(14); } 
+	| '(' ID exprlist ')' 				{ $$ = insert_node($2,0); pt(15); }
+	| '(' LET '(' id expr ')' expr ')' 	{ insert_child($4); insert_child($5); insert_child($7); $$ = insert_node("let",0); pt(16); }
 
 exprlist:
-	| expr exprlist 					{ insert_child(pop(&st)); pt(17); }
+	| expr exprlist 					{ insert_child($1); pt(17); }
 %%
 
 int yywrap() {
