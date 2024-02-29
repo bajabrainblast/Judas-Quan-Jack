@@ -52,7 +52,8 @@ program: '(' PEP expr ')' 									{ insert_child($3);
 
 decllist:							{ $$ = insert_node("decllist",0);
                                 pt(3.1); }
-	| '(' id type ')' decllist { insert_child($2);
+	| '(' id type ')' decllist { $$ = $5;
+                                insert_child($2);
 										  pt(3.2); }
 
 expr: const 									{ $$ = $1;
