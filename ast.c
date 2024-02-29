@@ -210,7 +210,6 @@ void insert_pass_through(int i) {
       free(old_ptr->id);
       free(old_ptr);
    }
-   ast_child_root = NULL;
    if (ast_list_root == node) {
       ast_list_root = node->next; 
    }
