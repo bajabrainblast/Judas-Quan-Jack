@@ -1,1 +1,2 @@
 (define-fun newfunc (t1 int) (t2 bool) bool (and (t2) (<= (t1) 0)))
+(print (newfunc a b))

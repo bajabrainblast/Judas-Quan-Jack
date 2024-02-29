@@ -205,7 +205,7 @@ void insert_pass_through(int i) {
       free(old_ptr);
    }
       
-   while (ptr != NULL && ptr->next != NULL) {
+   while (ptr != NULL) {
       struct ast_child *old_ptr = ptr;
       insert_child(ptr->id->id);
       ptr = ptr->next;
