@@ -187,3 +187,27 @@ void free_ast() {
     free(current_root);
   }
 }
+
+void insert_pass_through(int i) {
+   extern struct ast *ast_list_root;
+   struct ast *node = find_ast_node(i);
+   struct ast *prev = ast_list_root;
+   while (prev != NULL && prev->next != node) {
+      prev = prev->next;
+   }
+   struct ast_child *ptr = node->child;
+   while (ptr != NULL && ptr->next != NULL) {
+      struct ast_child *old_ptr = ptr;
+      insert_child(ptr->id->id);
+      ptr = ptr->next;
+      free(old_ptr->id);
+      free(old_ptr);
+   }
+   ast_child_root = NULL;
+   if (ast_list_root == node) {
+      ast_list_root = node->next; 
+   }
+   if (prev != NULL)
+      prev->next = node->next;
+   free(node);
+}
