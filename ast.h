@@ -29,6 +29,7 @@ int get_child_num(struct ast* ast_node);
 int visit_ast(int (*f)(struct ast* ast_node));
 void print_ast(); //    run "dot -Tpdf ast.dot -o ast.pdf" to create a PDF. Requires a preinstalled graphviz package (https://graphviz.org/download/)
 void free_ast();
+void insert_pass_through(int i);
 
  // static data structures used in the project:
 static int current_node_id = 0;

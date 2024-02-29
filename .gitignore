@@ -7,5 +7,6 @@ comp
 stack.o
 ast.dot
 ast.pdf
-
 *.swp
+.DS_Store
+*.dSYM/
