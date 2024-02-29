@@ -49,7 +49,7 @@ program: '(' PEP expr ')' 									{ insert_child($3);
 																	  insert_child($6);
 																	  insert_node("funcdef", 0);
 																	  pt(2); }
-decclist_base: decllist       { $$ = insert_node("decllist_base",0);}
+decllist_base: decllist       { $$ = insert_node("decllist_base",0);}
 
 decllist:							{ pt(3.1); }
 	| '(' id type ')' decllist {  insert_child($2);
