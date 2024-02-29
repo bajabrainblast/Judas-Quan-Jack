@@ -27,7 +27,7 @@
 
 %token<str> FUNCDEF GETINT GETBOOL BOP IF NOT LET TYPE PEP ID BOOL CONST AOP MAOP COMP
 
-%type<val> program decllist_base expr exprlist const id bool type
+%type<val> program decllist_base expr exprlist_base const id bool type
 
 %%
 
@@ -50,9 +50,9 @@ program: '(' PEP expr ')' 									{ insert_child($3);
 																	  pt(2); }
 decllist_base: decllist       { $$ = insert_node("decllist_base",0);}
 
-decllist:							{ pt(3.1); }
-	| '(' id type ')' decllist {  insert_child($2);
-										  pt(3.2); }
+decllist:							{ pt(3); }
+	| '(' id TYPE ')' decllist {  insert_child($2);
+										  pt(19); }
 
 expr: const 									{ $$ = $1;
 													  pt(4); }
@@ -67,12 +67,14 @@ expr: const 									{ $$ = $1;
 	| '(' NOT expr ')'						{ insert_child($3);
 													  $$ = insert_node("not",0);
 													  pt(9); }
-	| '(' BOP expr expr exprlist ')'		{ insert_child($3);
+	| '(' BOP expr expr exprlist_base ')'		{ insert_child($3);
 													  insert_child($4);
+                                         insert_pass_through($5);
 													  $$ = insert_node($2,0);
 													  pt(10); }
-	| '(' MAOP expr expr exprlist ')'	{ insert_child($3);
+	| '(' MAOP expr expr exprlist_base ')'	{ insert_child($3);
 													  insert_child($4);
+                                         insert_pass_through($5);
 													  $$ = insert_node($2,0);
 													  pt(11); }
 	| '(' AOP expr expr ')' 				{ insert_child($3);
@@ -88,7 +90,8 @@ expr: const 									{ $$ = $1;
 													  insert_child($5);
 													  $$ = insert_node("if",0);
 													  pt(14); }
-	| '(' ID exprlist ')' 					{ $$ = insert_node($2,0);
+	| '(' ID exprlist_base ')' 			{ insert_pass_through($3);
+                                         $$ = insert_node($2,0);
 													  pt(15); }
 	| '(' LET '(' id expr ')' expr ')' 	{ insert_child($4);
 	                                      insert_child($5);
@@ -96,9 +99,11 @@ expr: const 									{ $$ = $1;
 													  $$ = insert_node("let",0);
 													  pt(16); }
 
-exprlist:				{ pt(17.1); }
+exprlist_base: exprlist { $$ = insert_node("exprlist_base",0); }
+
+exprlist:				{ pt(17); }
 	| expr exprlist	{ insert_child($1);
-							  pt(17.2); }
+							  pt(18); }
 
 %%
 
