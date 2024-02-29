@@ -104,6 +104,7 @@ exprlist:				{ pt(17.1); }
 %%
 
 void insert_pass_through(int i) {
+   extern struct ast *ast_list_root;
    struct ast *node = find_ast_node(i);
    struct ast *prev = ast_list_root;
    while (prev != NULL && prev->next != node) {
