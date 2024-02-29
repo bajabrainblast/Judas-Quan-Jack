@@ -3,7 +3,7 @@ YACC= yacc
 LEX	= lex
 
 comp:	y.tab.c lex.yy.c ast.c comp.c stack.o
-	$(CC) lex.yy.c y.tab.c ast.c comp.c stack.o -o comp
+	$(CC) -g lex.yy.c y.tab.c ast.c comp.c stack.o -o comp
 
 y.tab.c: parser.y
 	$(YACC) -d parser.y
