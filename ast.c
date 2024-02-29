@@ -195,6 +195,14 @@ void insert_pass_through(int i) {
       prev = prev->next;
    }
    struct ast_child *ptr = node->child;
+   if (ptr != NULL) {
+      struct ast_child *old_ptr = ptr;
+      insert_child(ptr->id->id);
+      ptr = ptr->next;
+      free(old_ptr->id);
+      free(old_ptr);
+   }
+      
    while (ptr != NULL && ptr->next != NULL) {
       struct ast_child *old_ptr = ptr;
       insert_child(ptr->id->id);
