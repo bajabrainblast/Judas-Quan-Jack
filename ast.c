@@ -199,7 +199,6 @@ void insert_pass_through(int i) {
       struct ast_child *old_ptr = ptr;
       insert_child(ptr->id->id);
       ptr = ptr->next;
-      free(old_ptr->id);
       free(old_ptr);
    }
       
@@ -207,7 +206,6 @@ void insert_pass_through(int i) {
       struct ast_child *old_ptr = ptr;
       insert_child(ptr->id->id);
       ptr = ptr->next;
-      free(old_ptr->id);
       free(old_ptr);
    }
    if (ast_list_root == node) {
