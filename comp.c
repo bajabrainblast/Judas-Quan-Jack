@@ -4,12 +4,20 @@
 #include "table.h"
 int yyparse();
 
+void visitNode(struct ast *node){
+  if (!node) return;
+  printf("%d: %s\n", node->id, node->token);
+  struct ast_child *child;
+  for (child = node->child; child && child->id; child = child->next)
+    visitNode(child->id);
+}
+
 int main (int argc, char **argv) {
   extern struct stack st;
   st.top = NULL;
 
   extern struct sym_table table;
-  table.start = NULL; 
+  table.start = NULL;
 
   /*
   st_append("x", 0, "prog", 0, 0);
@@ -31,6 +39,8 @@ int main (int argc, char **argv) {
 
   int retval = yyparse();
   if (retval == 0) print_ast();
+  if (!ast_list_root) printf("NO ROOT!\n");
+  visitNode(ast_list_root);
   free_ast();
   return retval;
 }

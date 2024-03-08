@@ -56,10 +56,6 @@ print                         { mp("program entry point");
 
 %%
 
-int yywrap(){
-    return 1;
-}
-
 void mp(char* type) {
     //printf("line %3i: %30s: ", yylineno, type);
     //printf("%s\n", yytext);

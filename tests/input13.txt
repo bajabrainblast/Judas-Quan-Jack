@@ -1,0 +1,2 @@
+(define-fun myfunc int (+ (let (x (get-int)) x) (let (y (get-int)) y)))
+(print (myfunc))
