@@ -6,6 +6,7 @@
  **/
 
 #include "ast.h"
+#include <string.h>
 
 void insert_parent(struct ast* p) {
   struct ast_child* temp_ast_child_root = p->child;
@@ -19,7 +20,8 @@ void fill_ast_node(struct ast** t, int val, char* token, bool is_leaf, int ntoke
   (*t) = (struct ast*)malloc(sizeof(struct ast));
   (*t)->id = val;                                     //set value into id field
   (*t)->next = NULL;                                  //set next pointer to NULL
-  (*t)->token = token;
+  (*t)->token = (char *)malloc(sizeof(char) * 30);
+  strcpy((*t)->token,token);
   (*t)->is_leaf = is_leaf;
   (*t)->ntoken = ntoken;
   if (ast_child_root != NULL){                          //if child doesnot exist,
@@ -184,6 +186,36 @@ void free_ast() {
     }
     current_root = temp_root;
     temp_root = temp_root->next;
+    free(current_root->token);
     free(current_root);
   }
+}
+
+void insert_pass_through(int i) {
+   struct ast *node = find_ast_node(i);
+   struct ast *prev = ast_list_root;
+   while (prev != NULL && prev->next != node) {
+      prev = prev->next;
+   }
+   struct ast_child *ptr = node->child;
+   if (ptr != NULL) {
+      struct ast_child *old_ptr = ptr;
+      insert_child(ptr->id->id);
+      ptr = ptr->next;
+      free(old_ptr);
+   }
+      
+   while (ptr != NULL) {
+      struct ast_child *old_ptr = ptr;
+      insert_child(ptr->id->id);
+      ptr = ptr->next;
+      free(old_ptr);
+   }
+   if (ast_list_root == node) {
+      ast_list_root = node->next; 
+   }
+   if (prev != NULL)
+      prev->next = node->next;
+   free(node->token);
+   free(node);
 }

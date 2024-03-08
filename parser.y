@@ -1,10 +1,4 @@
 %{
-	/* TO DO
-		need to extract current token and use it instead of placeholder strings for node insertion
-		need to test all productions
-		possible special case for let?
-	*/
-
     #include <stdio.h>
     #include "y.tab.h"
 	#include "ast.h"
@@ -18,53 +12,92 @@
 
 	int extra = 0;
 	void pt(int);				// simple printing func for tracing execution
-	void get_children(int i);	// performs i many of this operation: pop the top id from stack, make that node a child
 %}
 
 %start program
 
-%token AOP MAOP COMP FUNCDEF GETINT GETBOOL BOOL BOP IF NOT LET TYPE PEP ID CONST
+%union {int val; char* str;}
+
+%token<str> FUNCDEF GETINT GETBOOL BOP IF NOT LET TYPE PEP ID BOOL CONST AOP MAOP COMP
+
+%type<val> program decllist decllist_base expr exprlist_base const id bool rettype
 
 %%
 
-program: '(' PEP expr ')' 				{ insert_child(pop(&st)); insert_node("PEP", 0); pt(1); }
-	| '(' FUNCDEF ID decllist TYPE expr ')' program { int id_id = insert_node("id",0); insert_child(pop(&st)); insert_child(pop(&st)); insert_child(id_id); insert_node("FUNCDEF", 0); pt(2); }
+id : ID { $$ = insert_node($1,0);}
 
-decllist:
-	| '(' ID TYPE ')' decllist
+const : CONST { $$ = insert_node($1,0);}
 
-expr: CONST
-	| ID
-	| BOOL
-	| '(' GETBOOL ')'
-	| '(' GETINT ')'
-	| '(' NOT expr ')'
-	| '(' BOP expr expr exprlist ')'
-	| '(' MAOP expr expr exprlist ')'
-	| '(' AOP expr expr ')'
-	| '(' COMP expr expr ')'
-	| '(' IF expr expr expr ')'
-	| '(' ID exprlist ')'
-	| '(' LET '(' ID expr ')' expr ')'
-decllist:
-	| '(' ID TYPE ')' decllist 			{ insert_child(insert_node("decllist", 0)); pt(3); }
+bool : BOOL { $$ = insert_node($1,0);}
 
-expr: CONST 							{ push(&st,insert_node("const",0)); pt(4); }
-	| ID 								{ push(&st,insert_node("id",0)); pt(5); }
-	| BOOL 								{ push(&st,insert_node("bool",0)); pt(6); }
-	| '(' GETBOOL ')' 					{ push(&st,insert_node("getbool",0)); pt(7); }
-	| '(' GETINT ')' 					{ push(&st,insert_node("getint",0)); pt(8); }
-	| '(' NOT expr ')'					{ insert_child(pop(&st)); insert_node("not",0); pt(9); }
-	| '(' BOP expr expr exprlist ')'	{ insert_child(pop(&st)); insert_child(pop(&st)); push(&st,insert_node("bop",0)); pt(10); }
-	| '(' MAOP expr expr exprlist ')'	{ insert_child(pop(&st)); insert_child(pop(&st)); push(&st,insert_node("maop",0)); pt(11); }
-	| '(' AOP expr expr ')' 			{ insert_child(pop(&st)); insert_child(pop(&st)); push(&st,insert_node("aop",0)); pt(12); }
-	| '(' COMP expr expr ')' 			{ insert_child(pop(&st)); insert_child(pop(&st)); push(&st,insert_node("comp",0)); pt(13); }
-	| '(' IF expr expr expr ')' 		{ insert_child(pop(&st)); insert_child(pop(&st)); insert_child(pop(&st)); push(&st,insert_node("if",0)); pt(14); }
-	| '(' ID exprlist ')' 				{ push(&st,insert_node("id",0)); pt(15); }
-	| '(' LET '(' ID expr ')' expr ')' 	{ int id_id = insert_node("id",0); insert_child(id_id); insert_child(pop(&st)); insert_child(pop(&st)); push(&st,insert_node("let",0)); pt(16); }
+rettype : TYPE { char str[20] = "ret ";$$ = insert_node(strcat(str,$1),0);}
 
-exprlist:
-	| expr exprlist 					{ insert_child(pop(&st)); pt(17); }
+program: '(' PEP expr ')' 									{ insert_child($3);
+																	  insert_node("PEP", 0);
+																	  pt(1); }
+	| '(' FUNCDEF id decllist_base rettype expr ')' program { insert_child($3);
+                                                     				  insert_pass_through($4);
+																	  insert_child($5);
+																	  insert_child($6);
+																	  insert_node("funcdef", 0);
+																	  pt(2); }
+decllist_base: decllist       { $$ = insert_node("decllist_base",0);}
+
+decllist:							{ pt(3); }
+	| '(' id TYPE ')' decllist {  insert_child($2);
+										  pt(19); }
+
+expr: const 									{ $$ = $1;
+													  pt(4); }
+	| id 											{ $$ = $1;
+	       	  									  pt(5); }
+	| bool 										{ $$ = $1;
+              									  pt(6); }
+	| '(' GETBOOL ')' 						{ $$ = insert_node("getbool",0);
+													  pt(7); }
+	| '(' GETINT ')' 							{ $$ = insert_node("getint",0);
+													  pt(8); }
+	| '(' NOT expr ')'						{ insert_child($3);
+													  $$ = insert_node("not",0);
+													  pt(9); }
+	| '(' BOP expr expr exprlist_base ')'		{ insert_child($3);
+													  insert_child($4);
+                                         insert_pass_through($5);
+													  $$ = insert_node($2,0);
+													  pt(10); }
+	| '(' MAOP expr expr exprlist_base ')'	{ insert_child($3);
+													  insert_child($4);
+                                         insert_pass_through($5);
+													  $$ = insert_node($2,0);
+													  pt(11); }
+	| '(' AOP expr expr ')' 				{ insert_child($3);
+													  insert_child($4);
+													  $$ = insert_node($2,0);
+													  pt(12); }
+	| '(' COMP expr expr ')' 				{ insert_child($3);
+													  insert_child($4);
+													  $$ = insert_node($2,0);
+													  pt(13); }
+	| '(' IF expr expr expr ')' 			{ insert_child($3);
+													  insert_child($4);
+													  insert_child($5);
+													  $$ = insert_node("if",0);
+													  pt(14); }
+	| '(' ID exprlist_base ')' 			{ insert_pass_through($3);
+                                         $$ = insert_node($2,0);
+													  pt(15); }
+	| '(' LET '(' id expr ')' expr ')' 	{ insert_child($4);
+	                                      insert_child($5);
+													  insert_child($7);
+													  $$ = insert_node("let",0);
+													  pt(16); }
+
+exprlist_base: exprlist { $$ = insert_node("exprlist_base",0); }
+
+exprlist:				{ pt(17); }
+	| expr exprlist	{ insert_child($1);
+							  pt(18); }
+
 %%
 
 int yywrap() {
@@ -77,12 +110,5 @@ void yyerror(char *msg){
 
 // comment out the print if unnecessary
 void pt(int i) {
-	printf("%i\n", i);
-}
-
-void get_children(int i) {
-	int j;
-	for (j=0; j<i; j++) {
-		insert_child(pop(&st));
-	}
+	//printf("%i\n", i);
 }
