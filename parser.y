@@ -1,10 +1,4 @@
 %{
-	/* TO DO
-		need to extract current token and use it instead of placeholder strings for node insertion
-		need to test all productions
-		possible special case for let?
-	*/
-
     #include <stdio.h>
     #include "y.tab.h"
 	#include "ast.h"
@@ -18,7 +12,6 @@
 
 	int extra = 0;
 	void pt(int);				// simple printing func for tracing execution
-	void get_children(int i);	// performs i many of this operation: pop the top id from stack, make that node a child
 %}
 
 %start program
@@ -27,7 +20,7 @@
 
 %token<str> FUNCDEF GETINT GETBOOL BOP IF NOT LET TYPE PEP ID BOOL CONST AOP MAOP COMP
 
-%type<val> program decllist_base expr exprlist_base const id bool rettype
+%type<val> program decllist decllist_base expr exprlist_base const id bool rettype
 
 %%
 
@@ -43,7 +36,7 @@ program: '(' PEP expr ')' 									{ insert_child($3);
 																	  insert_node("PEP", 0);
 																	  pt(1); }
 	| '(' FUNCDEF id decllist_base rettype expr ')' program { insert_child($3);
-                                                     insert_pass_through($4);
+                                                     				  insert_pass_through($4);
 																	  insert_child($5);
 																	  insert_child($6);
 																	  insert_node("funcdef", 0);
@@ -117,12 +110,5 @@ void yyerror(char *msg){
 
 // comment out the print if unnecessary
 void pt(int i) {
-	printf("%i\n", i);
-}
-
-void get_children(int i) {
-	int j;
-	for (j=0; j<i; j++) {
-		insert_child(pop(&st));
-	}
+	//printf("%i\n", i);
 }
