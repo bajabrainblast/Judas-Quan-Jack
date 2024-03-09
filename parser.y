@@ -36,15 +36,16 @@ program: '(' PEP expr ')' 									{ insert_child($3);
 																	  insert_node("PEP", 0);
 																	  pt(1); }
 	| '(' FUNCDEF id decllist_base rettype expr ')' program { insert_child($3);
-                                                     				  insert_pass_through($4);
+                                                             pop(&st);
+                                                             while (st.top != NULL && st.top->val != (-2)) insert_child(pop(&st));
 																	  insert_child($5);
 																	  insert_child($6);
 																	  insert_node("funcdef", 0);
 																	  pt(2); }
-decllist_base: decllist       { $$ = insert_node("decllist_base",0);}
+decllist_base: decllist       { push(&st,(-2)); }
 
 decllist:							{ pt(3); }
-	| '(' id TYPE ')' decllist {  insert_child($2);
+	| '(' id TYPE ')' decllist { push(&st,$2);
 										  pt(19); }
 
 expr: const 									{ $$ = $1;
@@ -67,7 +68,10 @@ expr: const 									{ $$ = $1;
 													  pt(10); }
 	| '(' MAOP expr expr exprlist_base ')'	{ insert_child($3);
 													  insert_child($4);
-                                         insert_pass_through($5);
+                                         pop(&st);
+                                         while(st.top != NULL && st.top->val != (-2)) {
+                                           insert_child(pop(&st));
+                                         };
 													  $$ = insert_node($2,0);
 													  pt(11); }
 	| '(' AOP expr expr ')' 				{ insert_child($3);
@@ -83,7 +87,8 @@ expr: const 									{ $$ = $1;
 													  insert_child($5);
 													  $$ = insert_node("if",0);
 													  pt(14); }
-	| '(' ID exprlist_base ')' 			{ insert_pass_through($3);
+	| '(' ID exprlist_base ')' 			{ pop(&st);
+                                         while (st.top != NULL && st.top->val != (-2)) insert_child(pop(&st));
                                          $$ = insert_node($2,0);
 													  pt(15); }
 	| '(' LET '(' id expr ')' expr ')' 	{ insert_child($4);
@@ -92,10 +97,10 @@ expr: const 									{ $$ = $1;
 													  $$ = insert_node("let",0);
 													  pt(16); }
 
-exprlist_base: exprlist { $$ = insert_node("exprlist_base",0); }
+exprlist_base: exprlist { push(&st,(-2)); }
 
 exprlist:				{ pt(17); }
-	| expr exprlist	{ insert_child($1);
+	| expr exprlist	{ push(&st,$1);
 							  pt(18); }
 
 %%
