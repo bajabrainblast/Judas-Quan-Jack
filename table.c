@@ -7,7 +7,7 @@ struct sym_table table;
 
 int let_count = 0;
 
-void st_append(char *name, int type, char *scope, int let_id, int is_func) {
+void st_append(char *name, int type, int node_id, char *scope, int let_id, int is_func) {
     struct table_entry *newt = (struct table_entry *) malloc(sizeof(struct table_entry));
     strcpy(newt->name, name);
     newt->type = type;
