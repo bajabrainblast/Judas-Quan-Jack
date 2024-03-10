@@ -112,3 +112,41 @@ int declare_var_before_use(struct ast *node) {
 
    return 0;
 }
+
+int unique_func_names() {
+  extern struct sym_table table;
+  struct table_entry *en, *en2;
+
+  for (en = table.start; en != NULL; en = en->next) {
+    // for each func
+    if (en->is_func == 1) {
+      for (en2 = en->next; en2 != NULL; en2 = en2->next) {
+        if (en2->is_func == 1) {
+          // compare against all other funcs
+          if (strcmp(en->name, en2->name) == 0)
+            return 1; // not unique
+        }
+      }
+    }
+  }
+  return 0;
+}
+
+int vars_with_func_names() {
+  extern struct sym_table table;
+  struct table_entry *en, *en2;
+
+  for (en = table.start; en != NULL; en = en->next) {
+    // for each var
+    if (en->is_func == 0) {
+      for (en2 = en->next; en2 != NULL; en2 = en2->next) {
+        if (en2->is_func == 1) {
+          // compare against all other funcs
+          if (strcmp(en->name, en2->name) == 0)
+            return 1; // not unique
+        }
+      }
+    }
+  }
+  return 0;
+}

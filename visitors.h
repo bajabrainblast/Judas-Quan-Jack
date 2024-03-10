@@ -9,4 +9,8 @@ int fill_table(struct ast *node);
 
 int declare_var_before_use(struct ast *node);
 
+int unique_func_names();
+
+int vars_with_func_names();
+
 #endif
