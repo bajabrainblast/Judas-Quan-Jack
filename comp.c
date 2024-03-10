@@ -20,7 +20,13 @@ int fill_ast(struct ast *node){
     strcpy(name, node->child->id->token);
     scope = (char *) malloc(5 * sizeof(char));
     strcpy(scope, "prog");
-    type = -1; // TODO: Determine type
+    int n = get_child_num(node) - 2;
+    for (child = node->child; child && n != 0; child = child->next){ n--; }
+    printf("Type: %s\n", child->id->token);
+    char *tp = strchr(child->id->token, ' ') + 1;
+    if (!strcmp(tp, "bool")) type = 0;
+    else if (!strcmp(tp, "int")) type = 1;
+    else type = -1; // TODO: Determine type
     let_id = 0;
     is_func = 1;
   } else if (!strcmp(node->token, "PEP")){
