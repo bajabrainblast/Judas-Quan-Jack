@@ -30,17 +30,14 @@ int fill_table(struct ast *node){
     child = node->child->next;
     for (; start_arg < end_arg; start_arg += 2) {
        if (strcmp(child->id->token,"bool") == 0) {
-          printf("bool\n");
           args[num_arg].type = 0;
        }
        if (strcmp(child->id->token,"int") == 0){
-          printf("int\n");
           args[num_arg].type = 1;
        }
        child = child->next;
        args[num_arg].id = child->id->id;
        child = child->next;
-       printf("%d\n",num_arg);
        num_arg ++;
     }
   } else if (!strcmp(node->token, "PEP")){
@@ -118,9 +115,9 @@ int declare_func_before_use(struct ast *node) {
       }
       struct ast *n = find_ast_node(en->node_id);
       int use_id = node->id;
-      printf("node id %d\n",use_id);
+      //printf("node id %d\n",use_id);
       int decl_id = en->node_id;
-      printf("decl id %d\n",decl_id);
+      //printf("decl id %d\n",decl_id);
       if (decl_id < use_id) {
          printf("Function %s not declared before use FAIL\n",node->token);
          return 1;
