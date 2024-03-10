@@ -86,14 +86,14 @@ int declare_var_before_use(struct ast *node) {
          if (strcmp(tmp->token,"funcdef") == 0) {
             struct table_entry *en = st_find_entry(tmp->child->id->token,"prog");
             if (en == NULL) {
-               printf("Variable %s not declared\n",node->token);
+               printf("Variable %s not declared FAIL\n",node->token);
                return 1;
             }
             int num_arg = en->num_arg;
             int i;
             for (i = 0; i < num_arg; i ++) {
                if (strcmp(find_ast_node(en->args[i].id)->token,node->token) == 0) {
-                  printf("Variable %s is good\n",node->token);
+                  printf("Variable %s is declared before use SUCCESS\n",node->token);
                   return 0;
                }
             }
@@ -113,7 +113,7 @@ int declare_func_before_use(struct ast *node) {
       struct ast *tmp = node->parent;
       struct table_entry *en = st_find_entry(node->token,"prog");
       if (en == NULL) {
-         printf("Function %s not declared\n",node->token);
+         printf("Function %s not declared FAIL\n",node->token);
          return 1;
       }
       struct ast *n = find_ast_node(en->node_id);
@@ -122,11 +122,11 @@ int declare_func_before_use(struct ast *node) {
       int decl_id = en->node_id;
       printf("decl id %d\n",decl_id);
       if (decl_id < use_id) {
-         printf("Function %s not declared before use\n",node->token);
+         printf("Function %s not declared before use FAIL\n",node->token);
          return 1;
       }
       else {
-         printf("Function %s has benn declared correctly\n",node->token);
+         printf("Function %s has been declared before use SUCCESS\n",node->token);
          return 0;
       }
    }
@@ -180,10 +180,10 @@ int match_num_args_func(struct ast *node) {
       }
       int use_num_child = get_child_num(node);
       if (use_num_child != en->num_arg) {
-         printf("Number of args not match function %s declaration\n",node->token);
+         printf("Number of args NOT match function %s declaration FAIL\n",node->token);
          return 1;
       }
+      printf("Number of args match function %s declaration SUCCESS\n",node->token);
    }
-
    return 0;
 }

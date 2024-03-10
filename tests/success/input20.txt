@@ -1,0 +1,2 @@
+(define-fun greater (t1 int) (t2 int) bool (< t1 t2))
+(print (greater 2 3))
