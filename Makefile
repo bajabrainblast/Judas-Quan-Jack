@@ -4,8 +4,8 @@ LEX	= lex
 
 # stack.o not in use?
 
-comp:	y.tab.c lex.yy.c ast.c comp.c stack.o table.o
-	$(CC) -g lex.yy.c y.tab.c ast.c comp.c stack.o table.o -o comp
+comp:	y.tab.c lex.yy.c ast.c comp.c stack.o table.o helpers.o visitors.o
+	$(CC) -g lex.yy.c y.tab.c ast.c comp.c stack.o table.o helpers.o visitors.o -o comp
 
 y.tab.c: parser.y
 	$(YACC) -d parser.y
@@ -18,6 +18,12 @@ stack.o: stack.c stack.h
 
 table.o: table.c table.h
 	$(CC) -c table.c
+
+helpers.o: helpers.c helpers.h
+	$(CC) -c helpers.c
+
+visitors.o: visitors.c visitors.h
+	$(CC) -c visitors.c
 
 clean: 
 	rm comp lex.yy.c y.tab.c y.tab.h stack.o table.o

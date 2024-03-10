@@ -4,6 +4,8 @@
  *
  * (c) FSU
  **/
+#ifndef AST_H
+#define AST_H
 
 #include <stdio.h>
 #include <stdbool.h>
@@ -35,3 +37,4 @@ void insert_pass_through(int i);
 static int current_node_id = 0;
 static struct ast_child* ast_child_root = NULL;
 static struct ast* ast_list_root = NULL;
+#endif
