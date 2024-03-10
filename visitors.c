@@ -113,6 +113,32 @@ int declare_var_before_use(struct ast *node) {
    return 0;
 }
 
+int declare_func_before_use(struct ast *node) {
+   if (node->ntoken == 2) {
+      //printf("%s is var\n",node->token);
+      struct ast *tmp = node->parent;
+      struct table_entry *en = st_find_entry(node->token,"prog");
+      if (en == NULL) {
+         printf("Function %s not declared\n",node->token);
+         return 1;
+      }
+      struct ast *n = find_ast_node(en->node_id);
+      int use_id = node->id;
+      printf("node id %d\n",use_id);
+      int decl_id = en->node_id;
+      printf("decl id %d\n",decl_id);
+      if (decl_id < use_id) {
+         printf("Function %s not declared before use\n",node->token);
+         return 1;
+      }
+      else {
+         printf("Function %s has benn declared correctly\n",node->token);
+         return 0;
+      }
+   }
+
+   return 0;
+}
 int unique_func_names() {
   extern struct sym_table table;
   struct table_entry *en, *en2;
