@@ -138,11 +138,11 @@ int duplicate_arg_func(struct ast *node) {
             }
          }
          if (count >= 2) {
-            printf("Duplicate arg %s in function %s FAIL\n",find_ast_node(en->args[i].id)->token,func_name);
+            // printf("Duplicate arg %s in function %s FAIL\n",find_ast_node(en->args[i].id)->token,func_name);
             return 1;
          }
       }
-      printf("No duplicate in function %s SUCCESS\n",func_name);
+      // printf("No duplicate in function %s SUCCESS\n",func_name);
       return 0;
    }
    return 0;
@@ -244,7 +244,7 @@ int unique_func_names(struct ast *node) {
 int vars_with_func_names(struct ast *node) {
   if (node->ntoken == 1 && get_func(node->token)){
     struct table_entry *f = get_func(node->token);
-    printf("%p\n", f);
+   //  printf("%p\n", f);
     return 1;
   }
   return 0;
