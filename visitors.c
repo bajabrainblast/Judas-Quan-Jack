@@ -29,16 +29,15 @@ int fill_table(struct ast *node){
     int start_arg = 1;
     child = node->child->next;
     for (; start_arg < end_arg; start_arg += 2) {
-       if (strcmp(child->id->token,"bool")) {
+       if (strcmp(child->id->token,"bool") == 0) {
           args[num_arg].type = 0;
        }
-       else {
+       if (strcmp(child->id->token,"int") == 0){
           args[num_arg].type = 1;
        }
        child = child->next;
        args[num_arg].id = child->id->id;
        child = child->next;
-       printf("%d\n",num_arg);
        num_arg ++;
     }
   } else if (!strcmp(node->token, "PEP")){
@@ -93,14 +92,14 @@ int declare_var_before_use(struct ast *node) {
          if (strcmp(tmp->token,"funcdef") == 0) {
             struct table_entry *en = st_find_entry(tmp->child->id->token,"prog");
             if (en == NULL) {
-               printf("Variable %s not declared\n",node->token);
+               printf("Variable %s not declared FAIL\n",node->token);
                return 1;
             }
             int num_arg = en->num_arg;
             int i;
             for (i = 0; i < num_arg; i ++) {
                if (strcmp(find_ast_node(en->args[i].id)->token,node->token) == 0) {
-                  printf("Variable %s is good\n",node->token);
+                  printf("Variable %s is declared before use SUCCESS\n",node->token);
                   return 0;
                }
             }
@@ -120,20 +119,20 @@ int declare_func_before_use(struct ast *node) {
       struct ast *tmp = node->parent;
       struct table_entry *en = st_find_entry(node->token,"prog");
       if (en == NULL) {
-         printf("Function %s not declared\n",node->token);
+         printf("Function %s not declared FAIL\n",node->token);
          return 1;
       }
       struct ast *n = find_ast_node(en->node_id);
       int use_id = node->id;
-      printf("node id %d\n",use_id);
+      //printf("node id %d\n",use_id);
       int decl_id = en->node_id;
-      printf("decl id %d\n",decl_id);
+      //printf("decl id %d\n",decl_id);
       if (decl_id < use_id) {
-         printf("Function %s not declared before use\n",node->token);
+         printf("Function %s not declared before use FAIL\n",node->token);
          return 1;
       }
       else {
-         printf("Function %s has benn declared correctly\n",node->token);
+         printf("Function %s has been declared before use SUCCESS\n",node->token);
          return 0;
       }
    }
@@ -177,7 +176,20 @@ int vars_with_func_names() {
   }
   return 0;
 }
-
-int unique_vars_in_scope(){
-  return 1;
+int match_num_args_func(struct ast *node) {
+   if (node->ntoken == 2) {
+      //printf("%s is var\n",node->token);
+      struct table_entry *en = st_find_entry(node->token,"prog");
+      if (en == NULL) {
+         printf("Function %s not declared\n",node->token);
+         return 1;
+      }
+      int use_num_child = get_child_num(node);
+      if (use_num_child != en->num_arg) {
+         printf("Number of args NOT match function %s declaration FAIL\n",node->token);
+         return 1;
+      }
+      printf("Number of args match function %s declaration SUCCESS\n",node->token);
+   }
+   return 0;
 }

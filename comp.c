@@ -18,6 +18,7 @@ int main (int argc, char **argv) {
     visit_ast(fill_table);
     visit_ast(declare_var_before_use);
     visit_ast(declare_func_before_use);
+    visit_ast(match_num_args_func);
 
     retval = unique_func_names();
     if (retval == 0)
