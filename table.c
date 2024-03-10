@@ -88,3 +88,12 @@ void st_print() {
         printf("%10s %10i %10s %10i %10i %35s\n", en->name, en->type, en->scope, en->let_id, en->is_func,args_txt);
     }
 }
+
+void st_free() {
+   struct table_entry *en;
+   for (en = table.start; en != NULL;) {
+      struct table_entry *temp = en->next;
+      free(en);
+      en = temp;
+   }
+}

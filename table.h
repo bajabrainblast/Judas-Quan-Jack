@@ -22,5 +22,6 @@ int st_exists(char *name);
 int st_exists_in(char *name, char *scope);
 int st_get_type(struct ast *);
 void st_print();
+void st_free();
 
 #endif

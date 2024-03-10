@@ -31,7 +31,8 @@ void visit(struct ast *node){
 
 int fill_table(struct ast *node){
   struct ast_child *child;
-  char *name, *scope;
+  char name[50];
+  char scope[50];
   int args[10];
   int types[10];
   int num_arg = 0;
@@ -39,9 +40,7 @@ int fill_table(struct ast *node){
   if (!strcmp(node->token, "funcdef")) {
     printf("Node %d: %s\n", node->id, node->token);
     // for (child = node->child; child; child = child->next) visit(child->id);
-    name = (char *) malloc(strlen(node->child->id->token)*sizeof(char) + 1);
     strcpy(name, node->child->id->token);
-    scope = (char *) malloc(5 * sizeof(char));
     strcpy(scope, "prog");
     int n = get_child_num(node) - 2;
     for (child = node->child; child && n != 0; child = child->next){ n--; }
@@ -70,9 +69,7 @@ int fill_table(struct ast *node){
   } else if (!strcmp(node->token, "PEP")){
     printf("Node %d: %s\n", node->id, node->token);
     // for (child = node->child; child; child = child->next) visit(child->id);
-    name = (char *) malloc(4*sizeof(char));
     strcpy(name, "PEP");
-    scope = (char *) malloc(5 * sizeof(char));
     strcpy(scope, "prog");
     type = getType(node->child->id); // TODO: Determine type
     let_id = 0;
@@ -94,14 +91,11 @@ int fill_table(struct ast *node){
     //   type = getType(child->)
     // }
     child = node->child;
-    name = (char *) malloc(strlen(child->id->token)*sizeof(char) + 1);
     strcpy(name, child->id->token);
     for (parent = node->parent; parent->parent; parent = parent->parent){}
     if (!strcmp(parent->token, "funcdef")){
-      scope = (char *) malloc(strlen(parent->child->id->token) * sizeof(char) + 1);
       strcpy(scope, parent->child->id->token);
     } else if (!strcmp(parent->token, "PEP")){
-      scope = (char *) malloc(4 * sizeof(char));
       strcpy(scope, "PEP");
     } else {
       printf("Scope: Error\n");
@@ -125,5 +119,6 @@ int main (int argc, char **argv) {
   st_print();
   if (retval == 0) print_ast();
   free_ast();
+  st_free();
   return retval;
 }
