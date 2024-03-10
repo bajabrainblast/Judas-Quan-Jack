@@ -1,3 +1,4 @@
+#include "ast.h"
 #include "table.h"
 #include <stdlib.h>
 #include <string.h>
@@ -7,7 +8,7 @@ struct sym_table table;
 
 int let_count = 0;
 
-void st_append(char *name, int type, int node_id, char *scope, int let_id, int is_func) {
+void st_append(char *name, int type, int node_id, char *scope, int let_id, int *args, int *types, int num_arg, int is_func) {
     struct table_entry *newt = (struct table_entry *) malloc(sizeof(struct table_entry));
     strcpy(newt->name, name);
     newt->type = type;
@@ -15,6 +16,12 @@ void st_append(char *name, int type, int node_id, char *scope, int let_id, int i
     newt->let_id = let_id;
     newt->is_func = is_func;
     newt->next = NULL;
+    int i;
+    for (i = 0; i < num_arg; i ++) {
+       newt->args[i] = args[i];
+       newt->types[i] = types[i];
+    }
+    newt->num_arg = num_arg;
 
     if (table.start == NULL) {
         table.start = newt;
@@ -50,10 +57,43 @@ int st_exists_in(char *name, char *scope) {
     return 0;
 }
 
+int st_get_type(struct ast *node){
+   if (!st_exists(node->token)) return -1;
+   struct table_entry *en;
+   for (en = table.start; en; en = en->next) {
+   if (!strcmp(node->token, en->name))
+      return en->type;
+   }
+   return (-1);
+}
+
 void st_print() {
     struct table_entry *en;
-    printf("%10s %10s %10s %10s %10s\n", "name", "type", "scope", "let_id", "is_func");
+    printf("%10s %10s %10s %10s %10s %35s\n", "name", "type", "scope", "let_id", "is_func","args");
     for (en = table.start; en != NULL; en = en->next) {
-        printf("%10s %10i %10s %10i %10i\n", en->name, en->type, en->scope, en->let_id, en->is_func);
+        char args_txt[30] = "";
+        int i;
+        for (i = 0; i < en->num_arg; i ++) {
+           char arg_item[14];
+           if (i == 0)
+              sprintf(arg_item,"%s :",find_ast_node(en->args[i])->token);
+           else
+              sprintf(arg_item,", %s :",find_ast_node(en->args[i])->token);
+           if (en->types[i] == 0)
+              strcat(arg_item," bool");
+           else
+              strcat(arg_item," int");
+           strcat(args_txt,arg_item);
+        }
+        printf("%10s %10i %10s %10i %10i %35s\n", en->name, en->type, en->scope, en->let_id, en->is_func,args_txt);
     }
+}
+
+void st_free() {
+   struct table_entry *en;
+   for (en = table.start; en != NULL;) {
+      struct table_entry *temp = en->next;
+      free(en);
+      en = temp;
+   }
 }

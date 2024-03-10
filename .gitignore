@@ -1,3 +1,4 @@
+.vscode/
 a.out
 lex.yy.c
 *.bak

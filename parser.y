@@ -66,6 +66,7 @@ expr: const 									{ $$ = $1;
 													  pt(9); }
 	| '(' BOP expr expr exprlist_base ')'		{ insert_child($3);
 													  insert_child($4);
+                                         pop(&st);
                                          while(st.top != NULL && st.top->val != (-2)) {
                                            insert_child(pop(&st));
                                          };
