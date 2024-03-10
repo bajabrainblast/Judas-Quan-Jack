@@ -1,10 +1,6 @@
 #include "helpers.h"
 #include "visitors.h"
 
-void visit(struct ast *node){
-  printf("\tNode %d (%s) visited\n", node->id, node->token);
-}
-
 int fill_table(struct ast *node){
   struct ast_child *child;
   char name[50];
@@ -261,8 +257,4 @@ int match_num_args_func(struct ast *node) {
       printf("Number of args match function %s declaration SUCCESS\n",node->token);
    }
    return 0;
-}
-
-int unique_vars_in_scope(){
-  return 1;
 }
