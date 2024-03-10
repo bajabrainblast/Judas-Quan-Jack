@@ -14,13 +14,10 @@ int main (int argc, char **argv) {
   table.start = NULL; 
 
   int retval = yyparse();
-  visit_ast(fill_table);
-  visit_ast(declare_var_before_use);
-  visit_ast(declare_func_before_use);
-  if (retval == 0) print_ast();
   if (retval == 0) {
     visit_ast(fill_table);
     visit_ast(declare_var_before_use);
+    visit_ast(declare_func_before_use);
 
     retval = unique_func_names();
     if (retval == 0)
