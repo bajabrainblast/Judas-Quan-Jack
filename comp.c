@@ -16,20 +16,13 @@ int main (int argc, char **argv) {
   int retval = yyparse();
   if (retval == 0) {
     visit_ast(fill_table);
-    retval = visit_ast(declare_var_before_use);
-    if (retval) printf("");
-    retval = visit_ast(declare_func_before_use);
-    if (retval) printf("");
-    retval = visit_ast(match_num_args_func);
-    if (retval) printf("");
-    retval = visit_ast(unique_func_names);
-    if (retval) printf("");
-    retval = visit_ast(vars_with_func_names);
-    if (retval) printf("");
-    retval = visit_ast(duplicate_var_declare);
-    if (retval) printf("");
-    retval = visit_ast(duplicate_arg_func);
-    if (retval) printf("");
+    if (visit_ast(declare_var_before_use)) return 1;
+    if (visit_ast(declare_func_before_use)) return 2;
+    if (visit_ast(match_num_args_func)) return 3;
+    if (visit_ast(unique_func_names)) return 4;
+    if (visit_ast(vars_with_func_names)) return 5;
+    if (visit_ast(duplicate_var_declare)) return 6;
+    if (visit_ast(duplicate_arg_func)) return 7;
     st_print();  // should not print if any failures occured
     print_ast(); 
   }
