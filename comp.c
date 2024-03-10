@@ -28,6 +28,8 @@ int main (int argc, char **argv) {
     if (retval == 0) printf("Error: Variable shares a name of a defined function\n");
     retval = visit_ast(duplicate_var_declare);
     if (retval) printf("Error: Variable declared twice\n");
+    retval = visit_ast(duplicate_arg_func);
+    if (retval) printf("Error: Function argument defined twice\n");
     st_print();  // should not print if any failures occured
     print_ast(); 
   }

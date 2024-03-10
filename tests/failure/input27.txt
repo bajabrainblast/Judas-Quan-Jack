@@ -1,0 +1,2 @@
+(define-fun func (t1 int) (t2 int) (t1 int) int (= (+ 1 (- 2 3)) 6))
+(print (+ 2 3))
