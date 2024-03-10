@@ -1,0 +1,2 @@
+(define-fun foo (v bool) int (if v 10 20))
+(print (foo true 1))

@@ -1,0 +1,2 @@
+(define-fun f (v int) int (let (v (+ 1 2)) (* v 2)))
+(print (f 1))
