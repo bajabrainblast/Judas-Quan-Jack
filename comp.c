@@ -19,20 +19,12 @@ int main (int argc, char **argv) {
     visit_ast(declare_var_before_use);
     visit_ast(declare_func_before_use);
     visit_ast(match_num_args_func);
-
-    retval = unique_func_names();
-    if (retval == 0)
-      printf("unique func names SUCCESS\n");
-    else 
-      printf("not unique func names FAILURE\n");
-
-    retval = vars_with_func_names();
-    if (retval == 0) 
-      printf("vars do not have func names SUCCESS\n");
-    else
-      printf("vars have func names FAILURE\n");
-    if (unique_vars_in_scope()) printf("Vars declared once per define-fun/sequence of nested let binders SUCCESS\n");
-    else printf("Duplicate vars in define-fun/sequence of nested let binders FAILURE");
+    retval = visit_ast(unique_func_names);
+    if (retval == 0) printf("unique func names SUCCESS\n");
+    else printf("not unique func names FAILURE\n");
+    retval = visit_ast(vars_with_func_names);
+    if (retval == 0) printf("vars do not have func names SUCCESS\n");
+    else printf("vars have func names FAILURE\n");
     st_print();  // should not print if any failures occured
     print_ast(); 
   }

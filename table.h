@@ -29,5 +29,6 @@ void st_print();
 void st_free();
 struct table_entry *st_find_entry(char *name, char *scope);
 struct table_entry *get_entry(char *name, int id);
-
+struct table_entry *get_func(char *name);
+int is_func_unique(char *name);
 #endif
