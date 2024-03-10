@@ -97,7 +97,7 @@ expr: const 									{ $$ = $1;
 													  pt(14); }
 	| '(' ID exprlist_base ')' 			{ pop(&st);
                                          while (st.top != NULL && st.top->val != (-2)) insert_child(pop(&st));
-                                         $$ = insert_node($2,0);
+                                         $$ = insert_node($2,2);
 													  pt(15); }
 	| '(' LET '(' id expr ')' expr ')' 	{ insert_child($4);
 	                                      insert_child($5);

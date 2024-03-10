@@ -13,6 +13,7 @@ void st_append(char *name, int type, int node_id, char *scope, int let_id, int *
     strcpy(newt->name, name);
     newt->type = type;
     strcpy(newt->scope, scope);
+    newt->node_id = node_id;
     newt->let_id = let_id;
     newt->is_func = is_func;
     newt->next = NULL;
