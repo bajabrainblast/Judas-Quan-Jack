@@ -32,6 +32,7 @@ int insertArg(struct arg args[], int id, int type){
       return 1;
     }
   }
+  return 0;
 }
 
 void findNestedLetVars(struct ast *node, char *token, int id){

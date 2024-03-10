@@ -1,2 +1,2 @@
 (define-fun func (x bool) (y bool) bool (and x y))
-(print (func x y))
+(print (func true true))
