@@ -30,10 +30,12 @@ int fill_table(struct ast *node){
     int start_arg = 1;
     child = node->child->next;
     for (; start_arg < end_arg; start_arg += 2) {
-       if (strcmp(child->id->token,"bool")) {
+       if (strcmp(child->id->token,"bool") == 0) {
+          printf("bool\n");
           types[num_arg] = 0;
        }
-       else {
+       if (strcmp(child->id->token,"int") == 0){
+          printf("int\n");
           types[num_arg] = 1;
        }
        child = child->next;
@@ -175,4 +177,21 @@ int vars_with_func_names() {
     }
   }
   return 0;
+}
+int match_num_args_func(struct ast *node) {
+   if (node->ntoken == 2) {
+      //printf("%s is var\n",node->token);
+      struct table_entry *en = st_find_entry(node->token,"prog");
+      if (en == NULL) {
+         printf("Function %s not declared\n",node->token);
+         return 1;
+      }
+      int use_num_child = get_child_num(node);
+      if (use_num_child != en->num_arg) {
+         printf("Number of args not match function %s declaration\n",node->token);
+         return 1;
+      }
+   }
+
+   return 0;
 }

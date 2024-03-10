@@ -82,7 +82,7 @@ void st_print() {
               sprintf(arg_item,", %s :",find_ast_node(en->args[i])->token);
            if (en->types[i] == 0)
               strcat(arg_item," bool");
-           else
+           if (en->types[i] == 1)
               strcat(arg_item," int");
            strcat(args_txt,arg_item);
         }
