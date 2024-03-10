@@ -29,9 +29,12 @@ void visit(struct ast *node){
   printf("\tNode %d (%s) visited\n", node->id, node->token);
 }
 
-int fill_ast(struct ast *node){
+int fill_table(struct ast *node){
   struct ast_child *child;
   char *name, *scope;
+  int args[10];
+  int types[10];
+  int num_arg = 0;
   int type, let_id, is_func;
   if (!strcmp(node->token, "funcdef")) {
     printf("Node %d: %s\n", node->id, node->token);
@@ -48,6 +51,22 @@ int fill_ast(struct ast *node){
     else type = -1;
     let_id = 0;
     is_func = 1;
+    int end_arg = get_child_num(node) - 2;
+    int start_arg = 1;
+    child = node->child->next;
+    for (; start_arg < end_arg; start_arg += 2) {
+       if (strcmp(child->id->token,"bool")) {
+          types[num_arg] = 0;
+       }
+       else {
+          types[num_arg] = 1;
+       }
+       child = child->next;
+       args[num_arg] = child->id->id;
+       child = child->next;
+       printf("%d\n",num_arg);
+       num_arg ++;
+    }
   } else if (!strcmp(node->token, "PEP")){
     printf("Node %d: %s\n", node->id, node->token);
     // for (child = node->child; child; child = child->next) visit(child->id);
@@ -90,7 +109,7 @@ int fill_ast(struct ast *node){
     let_id = 0;
     is_func = false;
   } else return 0;
-    st_append(name, type, node->id, scope, let_id, is_func);
+    st_append(name, type, node->id, scope, let_id, args, types, num_arg, is_func);
   return 0;
 }
 
@@ -102,7 +121,7 @@ int main (int argc, char **argv) {
   table.start = NULL; 
 
   int retval = yyparse();
-  visit_ast(fill_ast);
+  visit_ast(fill_table);
   st_print();
   if (retval == 0) print_ast();
   free_ast();
