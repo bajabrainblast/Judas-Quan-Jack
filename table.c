@@ -19,7 +19,8 @@ void st_append(char *name, int type, int node_id, char *scope, int let_id, struc
     newt->next = NULL;
     int i;
     for (i = 0; i < num_arg; i ++) {
-       newt->args[i] = args[i];
+       newt->args[i].id = args[i].id;
+       newt->args[i].type = args[i].type;
     }
     newt->num_arg = num_arg;
 

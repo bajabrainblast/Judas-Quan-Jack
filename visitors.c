@@ -70,8 +70,17 @@ int fill_table(struct ast *node){
     }
     let_id = 0;
     is_func = false;
+    st_append(name, type, node->child->id->id, scope, let_id, args, num_arg, is_func);
+    args[0].id = node->child->id->id;
+    args[0].type = type;
+    num_arg = 1;
+    strcpy(name, node->token);
   } else return 0;
-    st_append(name, type, node->id, scope, let_id, args, num_arg, is_func);
+  st_append(name, type, node->id, scope, let_id, args, num_arg, is_func);
+  for (int i = 0; i < num_arg; i++){
+    args[i].id = 0;
+    args[i].type = -1;
+  }
   return 0;
 }
 
@@ -167,4 +176,8 @@ int vars_with_func_names() {
     }
   }
   return 0;
+}
+
+int unique_vars_in_scope(){
+  return 1;
 }
