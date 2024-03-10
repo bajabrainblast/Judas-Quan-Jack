@@ -82,3 +82,33 @@ int fill_table(struct ast *node){
     st_append(name, type, node->id, scope, let_id, args, types, num_arg, is_func);
   return 0;
 }
+
+int declare_var_before_use(struct ast *node) {
+   if (node->ntoken == 1) {
+      //printf("%s is var\n",node->token);
+      struct ast *tmp = node->parent;
+      while (tmp != NULL) {
+         //printf("explore %s\n",tmp->token);
+         if (strcmp(tmp->token,"funcdef") == 0) {
+            struct table_entry *en = st_find_entry(tmp->child->id->token,"prog");
+            if (en == NULL) {
+               printf("Variable %s not declared\n",node->token);
+               return 1;
+            }
+            int num_arg = en->num_arg;
+            int i;
+            for (i = 0; i < num_arg; i ++) {
+               if (strcmp(find_ast_node(en->args[i])->token,node->token) == 0) {
+                  printf("Variable %s is good\n",node->token);
+                  return 0;
+               }
+            }
+            printf("Variable %s not declared\n",node->token);
+            return 1;
+         }
+         tmp = tmp->parent;
+      }
+   }
+
+   return 0;
+}

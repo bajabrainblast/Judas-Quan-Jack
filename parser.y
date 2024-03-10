@@ -20,11 +20,13 @@
 
 %token<str> FUNCDEF GETINT GETBOOL BOP IF NOT LET TYPE PEP ID BOOL CONST AOP MAOP COMP
 
-%type<val> program decllist decllist_base expr exprlist_base const id bool rettype type
+%type<val> program decllist decllist_base expr exprlist_base const id funcid bool rettype type
 
 %%
 
-id : ID { $$ = insert_node($1,0);}
+id : ID { $$ = insert_node($1,1);}
+
+funcid : ID { $$ = insert_node($1,0);}
 
 const : CONST { $$ = insert_node($1,0);}
 
@@ -37,7 +39,7 @@ type: TYPE { $$ = insert_node($1,0); }
 program: '(' PEP expr ')' 									{ insert_child($3);
 																	  insert_node("PEP", 0);
 																	  pt(1); }
-	| '(' FUNCDEF id decllist_base rettype expr ')' program { insert_child($3);
+	| '(' FUNCDEF funcid decllist_base rettype expr ')' program { insert_child($3);
                                                              pop(&st);
                                                              while (st.top != NULL && st.top->val != (-2)) insert_child(pop(&st));
 																	  insert_child($5);

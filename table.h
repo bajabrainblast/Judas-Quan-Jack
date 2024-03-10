@@ -23,5 +23,6 @@ int st_exists_in(char *name, char *scope);
 int st_get_type(struct ast *);
 void st_print();
 void st_free();
+struct table_entry *st_find_entry(char *name, char *scope);
 
 #endif
