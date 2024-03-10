@@ -97,3 +97,13 @@ void st_free() {
       en = temp;
    }
 }
+
+struct table_entry* st_find_entry(char *name, char *scope) {
+   struct table_entry *en;
+   for (en = table.start; en != NULL; en = en->next) {
+      if (strcmp(en->name,name) == 0 &&  strcmp(en->scope,scope) == 0) {
+         return en;
+      }
+   }
+   return NULL;
+}

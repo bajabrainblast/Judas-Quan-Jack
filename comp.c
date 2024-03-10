@@ -15,6 +15,7 @@ int main (int argc, char **argv) {
 
   int retval = yyparse();
   visit_ast(fill_table);
+  visit_ast(declare_var_before_use);
   st_print();
   if (retval == 0) print_ast();
   free_ast();

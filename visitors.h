@@ -7,4 +7,6 @@ void visit(struct ast *node);
 
 int fill_table(struct ast *node);
 
+int declare_var_before_use(struct ast *node);
+
 #endif
