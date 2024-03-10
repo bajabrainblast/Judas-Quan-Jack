@@ -17,6 +17,7 @@ struct sym_table {
 void st_append(char *name, int type, int node_id, char *scope, int let_id, int is_func);
 int st_exists(char *name);
 int st_exists_in(char *name, char *scope);
+int st_get_type(struct ast *);
 void st_print();
 
 #endif

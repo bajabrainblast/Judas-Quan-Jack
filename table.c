@@ -1,3 +1,4 @@
+#include "ast.h"
 #include "table.h"
 #include <stdlib.h>
 #include <string.h>
@@ -48,6 +49,15 @@ int st_exists_in(char *name, char *scope) {
         }
     }
     return 0;
+}
+
+int st_get_type(struct ast *node){
+   if (!st_exists(node->token)) return -1;
+   struct table_entry *en;
+   for (en = table.start; en; en = en->next) {
+   if (!strcmp(node->token, en->name))
+      return en->type;
+   }
 }
 
 void st_print() {
