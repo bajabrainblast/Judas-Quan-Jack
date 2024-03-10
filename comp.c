@@ -25,7 +25,7 @@ int main (int argc, char **argv) {
     retval = visit_ast(unique_func_names);
     if (retval) printf("Error: Function name defined twice\n");
     retval = visit_ast(vars_with_func_names);
-    if (retval == 0) printf("Error: Variable shares a name of a defined function\n");
+    if (retval) printf("Error: Variable shares a name of a defined function\n");
     retval = visit_ast(duplicate_var_declare);
     if (retval) printf("Error: Variable declared twice\n");
     retval = visit_ast(duplicate_arg_func);
