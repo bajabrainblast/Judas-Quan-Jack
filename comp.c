@@ -16,16 +16,18 @@ int main (int argc, char **argv) {
   int retval = yyparse();
   if (retval == 0) {
     visit_ast(fill_table);
-    visit_ast(declare_var_before_use);
-    visit_ast(declare_func_before_use);
-    visit_ast(match_num_args_func);
+    retval = visit_ast(declare_var_before_use);
+    if (retval) printf("Error: Variable not declared\n");
+    retval = visit_ast(declare_func_before_use);
+    if (retval) printf("Error: Function not defined\n");
+    retval = visit_ast(match_num_args_func);
+    if (retval) printf("Error: Number of arguments in function call does not match definition\n");
     retval = visit_ast(unique_func_names);
-    if (retval == 0) printf("unique func names SUCCESS\n");
-    else printf("not unique func names FAILURE\n");
+    if (retval) printf("Error: Function name defined twice\n");
     retval = visit_ast(vars_with_func_names);
-    if (retval == 0) printf("vars do not have func names SUCCESS\n");
-    else printf("vars have func names FAILURE\n");
-    visit_ast(duplicate_var_declare);
+    if (retval == 0) printf("Error: Variable shares a name of a defined function\n");
+    retval = visit_ast(duplicate_var_declare);
+    if (retval) printf("Error: Variable declared twice\n");
     st_print();  // should not print if any failures occured
     print_ast(); 
   }
