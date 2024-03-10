@@ -9,8 +9,7 @@ int fill_table(struct ast *node){
   struct ast_child *child;
   char name[50];
   char scope[50];
-  int args[10];
-  int types[10];
+  struct arg args[10];
   int num_arg = 0;
   int type, let_id, is_func;
   if (!strcmp(node->token, "funcdef")) {
@@ -32,14 +31,14 @@ int fill_table(struct ast *node){
     for (; start_arg < end_arg; start_arg += 2) {
        if (strcmp(child->id->token,"bool") == 0) {
           printf("bool\n");
-          types[num_arg] = 0;
+          args[num_arg].type = 0;
        }
        if (strcmp(child->id->token,"int") == 0){
           printf("int\n");
-          types[num_arg] = 1;
+          args[num_arg].type = 1;
        }
        child = child->next;
-       args[num_arg] = child->id->id;
+       args[num_arg].id = child->id->id;
        child = child->next;
        printf("%d\n",num_arg);
        num_arg ++;
@@ -61,13 +60,6 @@ int fill_table(struct ast *node){
     if (!strcmp(definition->token, "getbool")) type = 0;
     else if (!strcmp(definition->token, "getint")) type = 1; 
     else type = getType(definition);
-    // else {
-    //   child = definition->child;
-    //   if (isBoolean(child->id->token)) type = 0;
-    //   else if (isArithematic(child->id->token)) type = 1;
-    //   if ()
-    //   type = getType(child->)
-    // }
     child = node->child;
     strcpy(name, child->id->token);
     for (parent = node->parent; parent->parent; parent = parent->parent){}
@@ -81,7 +73,7 @@ int fill_table(struct ast *node){
     let_id = 0;
     is_func = false;
   } else return 0;
-    st_append(name, type, node->id, scope, let_id, args, types, num_arg, is_func);
+    st_append(name, type, node->id, scope, let_id, args, num_arg, is_func);
   return 0;
 }
 
@@ -100,7 +92,7 @@ int declare_var_before_use(struct ast *node) {
             int num_arg = en->num_arg;
             int i;
             for (i = 0; i < num_arg; i ++) {
-               if (strcmp(find_ast_node(en->args[i])->token,node->token) == 0) {
+               if (strcmp(find_ast_node(en->args[i].id)->token,node->token) == 0) {
                   printf("Variable %s is good\n",node->token);
                   return 0;
                }

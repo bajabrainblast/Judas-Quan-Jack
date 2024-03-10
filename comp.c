@@ -22,15 +22,15 @@ int main (int argc, char **argv) {
 
     retval = unique_func_names();
     if (retval == 0)
-      printf("unique func names\n");
+      printf("unique func names SUCCESS\n");
     else 
-      printf("not unique func names\n");
+      printf("not unique func names FAILURE\n");
 
     retval = vars_with_func_names();
     if (retval == 0) 
-      printf("vars do not have func names\n");
+      printf("vars do not have func names SUCCESS\n");
     else
-      printf("vars have func names\n");
+      printf("vars have func names FAILURE\n");
 
     st_print();  // should not print if any failures occured
     print_ast(); 
