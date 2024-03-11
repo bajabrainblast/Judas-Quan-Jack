@@ -36,7 +36,6 @@ int insertArg(struct arg args[], int id, int type){
 }
 
 void findNestedLetVars(struct ast *node, char *token, int id){
-  printf("%s visited\n", node->token);
   if (!strcmp(node->token, "let")){
     struct table_entry *l_en = get_entry(node->token, node->id), *v_en = get_entry(token, id);
     l_en->num_arg += insertArg(l_en->args, v_en->node_id, v_en->type);

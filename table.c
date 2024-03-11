@@ -120,3 +120,24 @@ struct table_entry *get_entry(char *name, int id){
     }
    return NULL;
 }
+
+struct table_entry *get_func(char *name){
+    struct table_entry *en;
+    for (en = table.start; en != NULL; en = en->next) {
+        if (en->is_func && !strcmp(en->name,name)) {
+            return en;
+        }
+    }
+   return NULL;
+}
+
+int is_func_unique(char *name){
+    int count = 0;
+    struct table_entry *en;
+    for (en = table.start; en != NULL; en = en->next) {
+        if (en->is_func && !strcmp(en->name,name)) {
+            count++;
+        }
+    }
+   return (count > 1);
+}

@@ -1,10 +1,6 @@
 #include "helpers.h"
 #include "visitors.h"
 
-void visit(struct ast *node){
-  printf("\tNode %d (%s) visited\n", node->id, node->token);
-}
-
 int fill_table(struct ast *node){
   struct ast_child *child;
   char name[50];
@@ -223,42 +219,52 @@ int declare_func_before_use(struct ast *node) {
 
    return 0;
 }
-int unique_func_names() {
-  extern struct sym_table table;
-  struct table_entry *en, *en2;
 
-  for (en = table.start; en != NULL; en = en->next) {
-    // for each func
-    if (en->is_func == 1) {
-      for (en2 = en->next; en2 != NULL; en2 = en2->next) {
-        if (en2->is_func == 1) {
-          // compare against all other funcs
-          if (strcmp(en->name, en2->name) == 0)
-            return 1; // not unique
-        }
-      }
-    }
-  }
+int unique_func_names(struct ast *node) {
+  struct table_entry *f = get_func(node->token);
+  if (!f) return 0;
+  if (is_func_unique(f->name)) return 1;
   return 0;
+  // extern struct sym_table table;
+  // struct table_entry *en, *en2;
+
+  // for (en = table.start; en != NULL; en = en->next) {
+    // for each func
+  //   if (en->is_func == 1) {
+  //     for (en2 = en->next; en2 != NULL; en2 = en2->next) {
+  //       if (en2->is_func == 1) {
+  //         // compare against all other funcs
+  //         if (strcmp(en->name, en2->name) == 0)
+  //           return 1; // not unique
+  //       }
+  //     }
+  //   }
+  // }
+  // return 0;
 }
 
-int vars_with_func_names() {
-  extern struct sym_table table;
-  struct table_entry *en, *en2;
-
-  for (en = table.start; en != NULL; en = en->next) {
-    // for each var
-    if (en->is_func == 0) {
-      for (en2 = en->next; en2 != NULL; en2 = en2->next) {
-        if (en2->is_func == 1) {
-          // compare against all other funcs
-          if (strcmp(en->name, en2->name) == 0)
-            return 1; // not unique
-        }
-      }
-    }
+int vars_with_func_names(struct ast *node) {
+  if (node->ntoken == 1){
+    struct table_entry *f = get_func(node->token);
+    if (f) return 1;
   }
   return 0;
+  // extern struct sym_table table;
+  // struct table_entry *en, *en2;
+
+  // for (en = table.start; en != NULL; en = en->next) {
+  //   // for each var
+  //   if (en->is_func == 0) {
+  //     for (en2 = en->next; en2 != NULL; en2 = en2->next) {
+  //       if (en2->is_func == 1) {
+  //         // compare against all other funcs
+  //         if (strcmp(en->name, en2->name) == 0)
+  //           return 1; // not unique
+  //       }
+  //     }
+  //   }
+  // }
+  // return 0;
 }
 
 int match_num_args_func(struct ast *node) {
@@ -277,8 +283,4 @@ int match_num_args_func(struct ast *node) {
       printf("Number of args match function %s declaration SUCCESS\n",node->token);
    }
    return 0;
-}
-
-int unique_vars_in_scope(){
-  return 1;
 }
