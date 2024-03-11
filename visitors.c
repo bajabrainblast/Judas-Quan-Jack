@@ -144,11 +144,11 @@ int duplicate_arg_func(struct ast *node) {
             }
          }
          if (count >= 2) {
-            printf("Duplicate arg %s in function %s FAIL",find_ast_node(en->args[i].id)->token,func_name);
+            printf("Duplicate arg %s in function %s FAIL\n",find_ast_node(en->args[i].id)->token,func_name);
             return 1;
          }
       }
-      printf("No duplicate in function %s SUCCESS",func_name);
+      printf("No duplicate in function %s SUCCESS\n",func_name);
       return 0;
    }
    return 0;
