@@ -11,9 +11,9 @@ int declare_var_before_use(struct ast *node);
 
 int declare_func_before_use(struct ast *node);
 
-int unique_func_names();
+int unique_func_names(struct ast *node);
 
-int vars_with_func_names();
+int vars_with_func_names(struct ast *node);
 
 int match_num_args_func(struct ast *node);
 
