@@ -102,7 +102,7 @@ expr: const 									{ $$ = $1;
 	| '(' LET '(' id expr ')' expr ')' 	{ insert_child($4);
 	                                      insert_child($5);
 													  insert_child($7);
-													  $$ = insert_node("let",0);
+													  $$ = insert_node("let",3);
 													  pt(16); }
 
 exprlist_base: exprlist { push(&st,(-2)); }
