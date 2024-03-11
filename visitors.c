@@ -89,6 +89,7 @@ int declare_var_before_use(struct ast *node) {
             struct table_entry *en = st_find_entry(tmp->child->id->token,"prog");
             if (en == NULL) {
                // printf("Variable %s not declared FAIL\n",node->token);
+               printf("Error: Variable %s not declared\n",node->token);
                return 1;
             }
             int num_arg = en->num_arg;
@@ -100,6 +101,7 @@ int declare_var_before_use(struct ast *node) {
                }
             }
             // printf("Variable %s not declared FAIL\n",node->token);
+            printf("Error: Variable %s not declared\n",node->token);
             return 1;
          }
          if (strcmp(tmp->token,"let") == 0) {
@@ -116,6 +118,7 @@ int declare_var_before_use(struct ast *node) {
          tmp = tmp->parent;
       }
       // printf("Variable %s not declared FAIL\n",node->token);
+      printf("Error: Variable %s not declared\n",node->token);
       return 1;
    }
 
@@ -139,6 +142,7 @@ int duplicate_arg_func(struct ast *node) {
          }
          if (count >= 2) {
             // printf("Duplicate arg %s in function %s FAIL\n",find_ast_node(en->args[i].id)->token,func_name);
+            printf("Error: Function argument %s defined twice\n",find_ast_node(en->args[i].id)->token);
             return 1;
          }
       }
@@ -160,6 +164,7 @@ int duplicate_var_declare(struct ast *node) {
             struct table_entry *en = st_find_entry(tmp->child->id->token,"prog");
             if (en == NULL) {
                // printf("Variable %s not declared FAIL\n",var_decl);
+               printf("Error: Variable %s declared twice\n",var_decl);
                return 1;
             }
             int num_arg = en->num_arg;
@@ -167,6 +172,7 @@ int duplicate_var_declare(struct ast *node) {
             for (i = 0; i < num_arg; i ++) {
                if (strcmp(find_ast_node(en->args[i].id)->token,var_decl) == 0) {
                   // printf("Variable %s is duplicate FAIL\n",var_decl);
+                  printf("Error: Variable %s declared twice\n",var_decl);
                   return 1;
                }
             }
@@ -179,6 +185,7 @@ int duplicate_var_declare(struct ast *node) {
             int i;
 	    if (strcmp(find_ast_node(en->args[0].id)->token,var_decl) == 0) {
 		// printf("Variable %s is duplicate FAIL\n",var_decl);
+      printf("Error: Variable %s declared twice\n",var_decl);
 		return 1;
 	    }
          }
@@ -198,6 +205,7 @@ int declare_func_before_use(struct ast *node) {
       struct table_entry *en = st_find_entry(node->token,"prog");
       if (en == NULL) {
          // printf("Function %s not declared FAIL\n",node->token);
+         printf("Error: Function %s not defined\n",node->token);
          return 1;
       }
       struct ast *n = find_ast_node(en->node_id);
@@ -207,6 +215,7 @@ int declare_func_before_use(struct ast *node) {
       //printf("decl id %d\n",decl_id);
       if (decl_id < use_id) {
          // printf("Function %s not declared before use FAIL\n",node->token);
+         printf("Error: Function %s not defined\n",node->token);
          return 1;
       }
       else {
@@ -221,7 +230,10 @@ int declare_func_before_use(struct ast *node) {
 int unique_func_names(struct ast *node) {
   struct table_entry *f = get_func(node->token);
   if (!f) return 0;
-  if (is_func_unique(f->name)) return 1;
+  if (is_func_unique(f->name)) {
+      printf("Error: Function %s name defined twice\n",node->token);
+      return 1;
+  }
   return 0;
   // extern struct sym_table table;
   // struct table_entry *en, *en2;
@@ -245,6 +257,7 @@ int vars_with_func_names(struct ast *node) {
   if (node->ntoken == 1 && get_func(node->token)){
     struct table_entry *f = get_func(node->token);
    //  printf("%p\n", f);
+   printf("Error: Variable shares a name of a defined function %s\n",f->name);
     return 1;
   }
   return 0;
@@ -271,12 +284,13 @@ int match_num_args_func(struct ast *node) {
       //printf("%s is var\n",node->token);
       struct table_entry *en = st_find_entry(node->token,"prog");
       if (en == NULL) {
-         // printf("Function %s not declared\n",node->token);
+         printf("Function %s not declared\n",node->token);
          return 1;
       }
       int use_num_child = get_child_num(node);
       if (use_num_child != en->num_arg) {
          // printf("Number of args NOT match function %s declaration FAIL\n",node->token);
+         printf("Error: Number of arguments in function %s does not match definition\n",node->token);
          return 1;
       }
       // printf("Number of args match function %s declaration SUCCESS\n",node->token);
