@@ -128,6 +128,32 @@ int declare_var_before_use(struct ast *node) {
    return 0;
 }
 
+int duplicate_arg_func(struct ast *node) {
+   if (strcmp(node->token,"funcdef") == 0) {
+      char *func_name = node->child->id->token;
+      struct table_entry *en = get_entry(func_name,node->id);
+      int num_arg = en->num_arg;
+      int i;
+      int j;
+      for (i = 0; i < num_arg; i ++) {
+         int count = 0;
+         for (j = 0; j < num_arg; j ++) {
+            if (strcmp(find_ast_node(en->args[i].id)->token
+                       ,find_ast_node(en->args[j].id)->token) == 0) {
+               count ++;
+            }
+         }
+         if (count >= 2) {
+            printf("Duplicate arg %s in function %s FAIL",find_ast_node(en->args[i].id)->token,func_name);
+            return 1;
+         }
+      }
+      printf("No duplicate in function %s SUCCESS",func_name);
+      return 0;
+   }
+   return 0;
+}
+
 int duplicate_var_declare(struct ast *node) {
    if (node->ntoken == 3) {
       //printf("%s is var\n",node->token);

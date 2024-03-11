@@ -21,4 +21,6 @@ int unique_vars_in_scope();
 
 int duplicate_var_declare(struct ast *node);
 
+int duplicate_arg_func(struct ast *node);
+   
 #endif
