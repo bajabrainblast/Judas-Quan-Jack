@@ -19,4 +19,6 @@ int match_num_args_func(struct ast *node);
 
 int duplicate_var_declare(struct ast *node);
 
+int duplicate_arg_func(struct ast *node);
+   
 #endif

@@ -26,6 +26,7 @@ int main (int argc, char **argv) {
     if (retval == 0) printf("vars do not have func names SUCCESS\n");
     else printf("vars have func names FAILURE\n");
     visit_ast(duplicate_var_declare);
+    visit_ast(duplicate_arg_func);
     st_print();  // should not print if any failures occured
     print_ast(); 
   }
