@@ -105,11 +105,24 @@ int declare_var_before_use(struct ast *node) {
                   return 0;
                }
             }
-            printf("Variable %s not declared\n",node->token);
+            printf("Variable %s not declared FAIL\n",node->token);
             return 1;
+         }
+         if (strcmp(tmp->token,"let") == 0) {
+            struct table_entry *en = get_entry(tmp->token,tmp->id);
+            int num_arg = en->num_arg;
+            int i;
+            for (i = 0; i < num_arg; i ++) {
+               if (strcmp(find_ast_node(en->args[i].id)->token,node->token) == 0) {
+                  printf("Variable %s is declared before use SUCCESS\n",node->token);
+                  return 0;
+               }
+            }
          }
          tmp = tmp->parent;
       }
+      printf("Variable %s not declared FAIL\n",node->token);
+      return 1;
    }
 
    return 0;
