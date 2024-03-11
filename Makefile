@@ -26,4 +26,4 @@ visitors.o: visitors.c visitors.h
 	$(CC) -c visitors.c
 
 clean: 
-	rm comp lex.yy.c y.tab.c y.tab.h stack.o table.o
+	rm comp lex.yy.c y.tab.c y.tab.h *.o
