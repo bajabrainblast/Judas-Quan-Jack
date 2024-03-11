@@ -150,7 +150,7 @@ int duplicate_var_declare(struct ast *node) {
                   return 1;
                }
             }
-            printf("Variable %s is NOT duplicated SUCCESS\n",var_decl);
+            printf("Variable %s is NOT duplicate SUCCESS\n",var_decl);
             return 0;
          }
          if (strcmp(tmp->token,"let") == 0) {
@@ -158,13 +158,13 @@ int duplicate_var_declare(struct ast *node) {
             int num_arg = en->num_arg;
             int i;
 	    if (strcmp(find_ast_node(en->args[0].id)->token,var_decl) == 0) {
-		printf("Variable %s is duplicated FAIL\n",var_decl);
+		printf("Variable %s is duplicate FAIL\n",var_decl);
 		return 1;
 	    }
          }
          tmp = tmp->parent;
       }
-      printf("Variable %s is NOT duplicated SUCCESS\n",var_decl);
+      printf("Variable %s is NOT duplicate SUCCESS\n",var_decl);
       return 0;
    }
 
