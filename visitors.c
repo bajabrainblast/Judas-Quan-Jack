@@ -157,12 +157,10 @@ int duplicate_var_declare(struct ast *node) {
             struct table_entry *en = get_entry(tmp->token,tmp->id);
             int num_arg = en->num_arg;
             int i;
-            for (i = 0; i < num_arg; i ++) {
-               if (strcmp(find_ast_node(en->args[i].id)->token,node->token) == 0) {
-                  printf("Variable %s is duplicated FAIL\n",var_decl);
-                  return 1;
-               }
-            }
+	    if (strcmp(find_ast_node(en->args[0].id)->token,var_decl) == 0) {
+		printf("Variable %s is duplicated FAIL\n",var_decl);
+		return 1;
+	    }
          }
          tmp = tmp->parent;
       }
