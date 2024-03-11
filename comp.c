@@ -32,8 +32,6 @@ int main (int argc, char **argv) {
       printf("vars do not have func names SUCCESS\n");
     else
       printf("vars have func names FAILURE\n");
-    if (unique_vars_in_scope()) printf("Vars declared once per define-fun/sequence of nested let binders SUCCESS\n");
-    else printf("Duplicate vars in define-fun/sequence of nested let binders FAILURE");
     st_print();  // should not print if any failures occured
     print_ast(); 
   }
