@@ -17,4 +17,6 @@ int vars_with_func_names();
 
 int match_num_args_func(struct ast *node);
 
+int unique_vars_in_scope();
+
 #endif

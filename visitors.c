@@ -13,7 +13,7 @@ int fill_table(struct ast *node){
   int num_arg = 0;
   int type, let_id, is_func;
   if (!strcmp(node->token, "funcdef")) {
-    printf("Node %d: %s\n", node->id, node->token);
+    // printf("Node %d: %s\n", node->id, node->token);
     // for (child = node->child; child; child = child->next) visit(child->id);
     strcpy(name, node->child->id->token);
     strcpy(scope, "prog");
@@ -41,7 +41,7 @@ int fill_table(struct ast *node){
        num_arg ++;
     }
   } else if (!strcmp(node->token, "PEP")){
-    printf("Node %d: %s\n", node->id, node->token);
+    // printf("Node %d: %s\n", node->id, node->token);
     // for (child = node->child; child; child = child->next) visit(child->id);
     strcpy(name, "PEP");
     strcpy(scope, "prog");
@@ -49,14 +49,14 @@ int fill_table(struct ast *node){
     let_id = 0;
     is_func = 1;
   } else if (!strcmp(node->token, "let")) {
-    printf("Node %d: %s\n", node->id, node->token);
+    // printf("Node %d: %s\n", node->id, node->token);
     // for (child = node->child; child; child = child->next) visit(child->id);
     struct ast *definition, *parent;
     // for (parent = node->parent; parent; parent = parent->parent) visit(parent);
     definition = node->child->next->id;
     if (!strcmp(definition->token, "getbool")) type = 0;
     else if (!strcmp(definition->token, "getint")) type = 1; 
-    else type = getType(definition);
+    else type = getType(node->child->next->next->id);
     child = node->child;
     strcpy(name, child->id->token);
     for (parent = node->parent; parent->parent; parent = parent->parent){}
@@ -70,10 +70,12 @@ int fill_table(struct ast *node){
     let_id = 0;
     is_func = false;
     st_append(name, type, node->child->id->id, scope, let_id, args, num_arg, is_func);
+    strcpy(name, node->token);
     args[0].id = node->child->id->id;
     args[0].type = type;
     num_arg = 1;
-    strcpy(name, node->token);
+    findNestedLetVars(node->child->next->id, node->child->id->token, node->child->id->id);
+    findNestedLetVars(node->child->next->next->id, node->child->id->token, node->child->id->id);
   } else return 0;
   st_append(name, type, node->id, scope, let_id, args, num_arg, is_func);
   for (int i = 0; i < num_arg; i++){
@@ -176,6 +178,7 @@ int vars_with_func_names() {
   }
   return 0;
 }
+
 int match_num_args_func(struct ast *node) {
    if (node->ntoken == 2) {
       //printf("%s is var\n",node->token);
@@ -192,4 +195,8 @@ int match_num_args_func(struct ast *node) {
       printf("Number of args match function %s declaration SUCCESS\n",node->token);
    }
    return 0;
+}
+
+int unique_vars_in_scope(){
+  return 1;
 }

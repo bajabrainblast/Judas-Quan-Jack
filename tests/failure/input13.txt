@@ -18,9 +18,9 @@
         (let
             (y 
                 (let
-                    (a (get-int)) 
+                    (z (get-int)) 
                     (let
-                        (b (get-int))
+                        (y (get-int))
                         (if (< a b) b a)
                     )
                 )

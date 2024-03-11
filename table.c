@@ -75,6 +75,7 @@ void st_print() {
         char args_txt[30] = "";
         int i;
         for (i = 0; i < en->num_arg; i ++) {
+           if (en->args[i].id == 0) continue;
            char arg_item[14];
            if (i == 0)
               sprintf(arg_item,"%s :",find_ast_node(en->args[i].id)->token);
@@ -86,6 +87,7 @@ void st_print() {
               strcat(arg_item," int");
            strcat(args_txt,arg_item);
         }
+        if (!en) continue;
         printf("%10s %10i %10s %10i %10i %35s\n", en->name, en->type, en->scope, en->let_id, en->is_func,args_txt);
     }
 }
@@ -106,5 +108,15 @@ struct table_entry* st_find_entry(char *name, char *scope) {
          return en;
       }
    }
+   return NULL;
+}
+
+struct table_entry *get_entry(char *name, int id){
+    struct table_entry *en;
+    for (en = table.start; en != NULL; en = en->next) {
+        if (!strcmp(en->name,name) &&  id == en->node_id) {
+            return en;
+        }
+    }
    return NULL;
 }
