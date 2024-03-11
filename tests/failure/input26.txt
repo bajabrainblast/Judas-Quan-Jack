@@ -1,0 +1,2 @@
+(define-fun newfunc (t1 int) (t2 int) int (let (t2 2) (+ t1 t2)))
+(print (newfunc 2 3))

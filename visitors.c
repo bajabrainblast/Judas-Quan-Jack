@@ -128,6 +128,49 @@ int declare_var_before_use(struct ast *node) {
    return 0;
 }
 
+int duplicate_var_declare(struct ast *node) {
+   if (node->ntoken == 3) {
+      //printf("%s is var\n",node->token);
+      struct ast *tmp = node->parent;
+      struct table_entry *let_entry = get_entry("let",node->id);
+      char *var_decl = find_ast_node(let_entry->args[0].id)->token;
+      while (tmp != NULL) {
+         //printf("explore %s\n",tmp->token);
+         if (strcmp(tmp->token,"funcdef") == 0) {
+            struct table_entry *en = st_find_entry(tmp->child->id->token,"prog");
+            if (en == NULL) {
+               printf("Variable %s not declared FAIL\n",var_decl);
+               return 1;
+            }
+            int num_arg = en->num_arg;
+            int i;
+            for (i = 0; i < num_arg; i ++) {
+               if (strcmp(find_ast_node(en->args[i].id)->token,var_decl) == 0) {
+                  printf("Variable %s is duplicate FAIL\n",var_decl);
+                  return 1;
+               }
+            }
+            printf("Variable %s is NOT duplicate SUCCESS\n",var_decl);
+            return 0;
+         }
+         if (strcmp(tmp->token,"let") == 0) {
+            struct table_entry *en = get_entry(tmp->token,tmp->id);
+            int num_arg = en->num_arg;
+            int i;
+	    if (strcmp(find_ast_node(en->args[0].id)->token,var_decl) == 0) {
+		printf("Variable %s is duplicate FAIL\n",var_decl);
+		return 1;
+	    }
+         }
+         tmp = tmp->parent;
+      }
+      printf("Variable %s is NOT duplicate SUCCESS\n",var_decl);
+      return 0;
+   }
+
+   return 0;
+}
+
 int declare_func_before_use(struct ast *node) {
    if (node->ntoken == 2) {
       //printf("%s is var\n",node->token);
