@@ -108,6 +108,13 @@ int declare_var_before_use(struct ast *node) {
             struct table_entry *en = get_entry(tmp->token,tmp->id);
             int num_arg = en->num_arg;
             int i;
+
+            struct ast *let_define_node = find_ast_node(en->node_id)->child->next->id;
+
+            if (find_parent(node,let_define_node) != NULL) {
+               tmp = tmp->parent;
+               continue;
+            }
             for (i = 0; i < num_arg; i ++) {
                if (strcmp(find_ast_node(en->args[i].id)->token,node->token) == 0) {
                   // printf("Variable %s is declared before use SUCCESS\n",node->token);
