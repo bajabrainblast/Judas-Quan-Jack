@@ -141,3 +141,12 @@ int is_func_unique(char *name){
     }
    return (count > 1);
 }
+
+struct table_entry* find_by_id(int node_id) {
+   struct table_entry *en;
+   for (en = table.start; en != NULL; en = en->next) {
+      if (en->node_id == node_id)
+        return en;
+   }
+   return NULL;
+}
