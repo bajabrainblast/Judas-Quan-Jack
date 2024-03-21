@@ -26,11 +26,13 @@ void tm_append(struct ast *node, int type) {
     }
 }
 
-int tm_unknowns() {
+int tm_contains_unknowns() {
     struct map_entry *en = map.start;
     while (en != NULL) {
-        if (en->type == 2)
+        if (en->type == 2) {
+            //printf("%s %i is unknown\n", en->node->token, en->node->id);
             return 1;
+        }
         en = en->next;
     }
     return 0;
@@ -52,4 +54,22 @@ void tm_free() {
       free(en);
       en = temp;
    }    
+}
+
+int tm_exists(struct ast *node) {
+   struct map_entry *en;
+   for (en = map.start; en != NULL; en=en->next) {
+      if (en->node == node)
+         return 1;
+   }  
+   return 0;
+}
+
+struct map_entry* tm_find(struct ast *node) {
+   struct map_entry *en;
+   for (en = map.start; en != NULL; en=en->next) {
+      if (en->node == node)
+         return en;
+   }  
+   return NULL;
 }

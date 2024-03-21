@@ -28,7 +28,10 @@ int main (int argc, char **argv) {
     if (visit_ast(duplicate_var_declare)) return 6;
     if (visit_ast(duplicate_arg_func)) return 7;
 
-    visit_ast(fill_map);
+    // pass over as many times as needed until zero unknowns remain
+    while(visit_ast(fill_map) == 0)
+      printf("pass\n");
+
     tm_print();
 
     st_print();  // should not print if any failures occured

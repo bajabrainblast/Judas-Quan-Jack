@@ -11,8 +11,11 @@ struct type_map {
 };
 
 void tm_append(struct ast *node, int type);
-int tm_unknowns(); // returns 1 if any unknown mappings, 0 otherwise
+int tm_contains_unknowns(); // returns 1 if any unknown mappings, 0 otherwise
 void tm_print();
 void tm_free();
+int tm_exists(struct ast *node);
+struct map_entry* tm_find(struct ast *node);
+
 
 #endif
