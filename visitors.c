@@ -310,13 +310,17 @@ int match_num_args_func(struct ast *node) {
 int fill_map(struct ast *node) {
    struct table_entry *sten = st_find_by_id(node->id);
    int type = 2; // 0 for bool, 1 for int, 2 for unknown
-   
+
    if (sten != NULL) 
       type = sten->type;
    else if (isArithematic(node->token) || isArithematicConst(node->token)) 
       type = 1;
    else if (isBoolean(node->token) || isBooleanConst(node->token))
       type = 0;   
+   else if (!strcmp(node->token, "funcdef"))
+      ;
+   else if (!strcmp(node->token, "let"))
+      ;
 
    tm_append(node, type);
    return 0;
