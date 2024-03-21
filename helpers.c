@@ -1,5 +1,7 @@
 #include "helpers.h"
 #include "table.h"
+#include "string.h"
+#include <ctype.h>
 
 int isArithematic(char *op){
   return !strcmp(op, "+") || !strcmp(op, "-") || !strcmp(op, "*") ||
@@ -7,11 +9,15 @@ int isArithematic(char *op){
 }
 
 int isArithematicConst(char *op) {
-  if (op[0] == '-') {
-
+  int i=0, len=strlen(op);
+  if (op[0] == '-')
+    i++;
+  for (; i<len; i++) {
+    if (!isdigit(op[i]))
+      return 0;
   }
-  else
-    return 0;
+
+  return 1;
 }
 
 int isBoolean(char *op){
