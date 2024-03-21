@@ -4,6 +4,7 @@
 #include "stack.h"
 #include "table.h"
 #include "visitors.h"
+#include "map.h"
 int yyparse();
 
 int main (int argc, char **argv) {
@@ -12,6 +13,9 @@ int main (int argc, char **argv) {
 
   extern struct sym_table table;
   table.start = NULL; 
+
+  extern struct type_map map;
+  map.start = NULL;
 
   int retval = yyparse();
   if (retval == 0) {
@@ -23,10 +27,15 @@ int main (int argc, char **argv) {
     if (visit_ast(vars_with_func_names)) return 5;
     if (visit_ast(duplicate_var_declare)) return 6;
     if (visit_ast(duplicate_arg_func)) return 7;
+
+    visit_ast(fill_map);
+    tm_print();
+
     st_print();  // should not print if any failures occured
     print_ast(); 
   }
   free_ast();
   st_free();
+  tm_free();
   return retval;
 }

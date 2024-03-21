@@ -1,5 +1,7 @@
-#include "helpers.h"
 #include "visitors.h"
+#include "helpers.h"
+#include "table.h"
+#include "map.h"
 
 int fill_table(struct ast *node){
   struct ast_child *child;
@@ -105,7 +107,7 @@ int declare_var_before_use(struct ast *node) {
             return 1;
          }
          if (strcmp(tmp->token,"let") == 0) {
-            struct table_entry *en = get_entry(tmp->token,tmp->id);
+            struct table_entry *en = st_get_entry(tmp->token,tmp->id);
             int num_arg = en->num_arg;
             int i;
 
@@ -135,7 +137,7 @@ int declare_var_before_use(struct ast *node) {
 int duplicate_arg_func(struct ast *node) {
    if (strcmp(node->token,"funcdef") == 0) {
       char *func_name = node->child->id->token;
-      struct table_entry *en = get_entry(func_name,node->id);
+      struct table_entry *en = st_get_entry(func_name,node->id);
       int num_arg = en->num_arg;
       int i;
       int j;
@@ -163,7 +165,7 @@ int duplicate_var_declare(struct ast *node) {
    if (node->ntoken == 3) {
       //printf("%s is var\n",node->token);
       struct ast *tmp = node->parent;
-      struct table_entry *let_entry = get_entry("let",node->id);
+      struct table_entry *let_entry = st_get_entry("let",node->id);
       char *var_decl = find_ast_node(let_entry->args[0].id)->token;
       while (tmp != NULL) {
          //printf("explore %s\n",tmp->token);
@@ -187,7 +189,7 @@ int duplicate_var_declare(struct ast *node) {
             return 0;
          }
          if (strcmp(tmp->token,"let") == 0) {
-            struct table_entry *en = get_entry(tmp->token,tmp->id);
+            struct table_entry *en = st_get_entry(tmp->token,tmp->id);
             int num_arg = en->num_arg;
             int i;
 	    if (strcmp(find_ast_node(en->args[0].id)->token,var_decl) == 0) {
@@ -235,9 +237,9 @@ int declare_func_before_use(struct ast *node) {
 }
 
 int unique_func_names(struct ast *node) {
-  struct table_entry *f = get_func(node->token);
+  struct table_entry *f = st_get_func(node->token);
   if (!f) return 0;
-  if (is_func_unique(f->name)) {
+  if (st_is_func_unique(f->name)) {
       printf("Error: Function %s name defined twice\n",node->token);
       return 1;
   }
@@ -261,8 +263,8 @@ int unique_func_names(struct ast *node) {
 }
 
 int vars_with_func_names(struct ast *node) {
-  if (node->ntoken == 1 && get_func(node->token)){
-    struct table_entry *f = get_func(node->token);
+  if (node->ntoken == 1 && st_get_func(node->token)){
+    struct table_entry *f = st_get_func(node->token);
    //  printf("%p\n", f);
    printf("Error: Variable shares a name of a defined function %s\n",f->name);
     return 1;
@@ -302,5 +304,20 @@ int match_num_args_func(struct ast *node) {
       }
       // printf("Number of args match function %s declaration SUCCESS\n",node->token);
    }
+   return 0;
+}
+
+int fill_map(struct ast *node) {
+   struct table_entry *sten = st_find_by_id(node->id);
+   int type = 2; // 0 for bool, 1 for int, 2 for unknown
+   
+   if (sten != NULL) 
+      type = sten->type;
+   else if (isArithematic(node->token) || isArithematicConst(node->token)) 
+      type = 1;
+   else if (isBoolean(node->token) || isBooleanConst(node->token))
+      type = 0;   
+
+   tm_append(node, type);
    return 0;
 }
