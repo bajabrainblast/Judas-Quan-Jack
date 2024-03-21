@@ -3,13 +3,26 @@
 
 int isArithematic(char *op){
   return !strcmp(op, "+") || !strcmp(op, "-") || !strcmp(op, "*") ||
-         !strcmp(op, "div") || !strcmp(op, "mod") || !strcmp(op, "getint");
+         !strcmp(op, "div") || !strcmp(op, "mod") || !strcmp(op, "get-int");
+}
+
+int isArithematicConst(char *op) {
+  if (op[0] == '-') {
+
+  }
+  else
+    return 0;
 }
 
 int isBoolean(char *op){
   return !strcmp(op, "=") || !strcmp(op, "<") || !strcmp(op, ">") ||
          !strcmp(op, "<=") || !strcmp(op, ">=") || !strcmp(op, "not") ||
-         !strcmp(op, "and") || !strcmp(op, "or")|| !strcmp(op, "getbool");
+         !strcmp(op, "and") || !strcmp(op, "or")|| !strcmp(op, "get-bool");
+}
+
+int isBooleanConst(char *op) {
+  return !strcmp(op, "True") || !strcmp(op, "true") ||
+         !strcmp(op, "False") || !strcmp(op, "false");
 }
 
 int getType(struct ast *node){
@@ -37,7 +50,7 @@ int insertArg(struct arg args[], int id, int type){
 
 void findNestedLetVars(struct ast *node, char *token, int id){
   if (!strcmp(node->token, "let")){
-    struct table_entry *l_en = get_entry(node->token, node->id), *v_en = get_entry(token, id);
+    struct table_entry *l_en = st_get_entry(node->token, node->id), *v_en = st_get_entry(token, id);
     l_en->num_arg += insertArg(l_en->args, v_en->node_id, v_en->type);
   }
   for (struct ast_child *child = node->child; child; child = child->next){
