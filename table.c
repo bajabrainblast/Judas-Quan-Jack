@@ -111,7 +111,7 @@ struct table_entry* st_find_entry(char *name, char *scope) {
    return NULL;
 }
 
-struct table_entry *get_entry(char *name, int id){
+struct table_entry *st_get_entry(char *name, int id){
     struct table_entry *en;
     for (en = table.start; en != NULL; en = en->next) {
         if (!strcmp(en->name,name) &&  id == en->node_id) {
@@ -121,7 +121,7 @@ struct table_entry *get_entry(char *name, int id){
    return NULL;
 }
 
-struct table_entry *get_func(char *name){
+struct table_entry *st_get_func(char *name){
     struct table_entry *en;
     for (en = table.start; en != NULL; en = en->next) {
         if (en->is_func && !strcmp(en->name,name)) {
@@ -131,7 +131,7 @@ struct table_entry *get_func(char *name){
    return NULL;
 }
 
-int is_func_unique(char *name){
+int st_is_func_unique(char *name){
     int count = 0;
     struct table_entry *en;
     for (en = table.start; en != NULL; en = en->next) {
@@ -142,7 +142,7 @@ int is_func_unique(char *name){
    return (count > 1);
 }
 
-struct table_entry* find_by_id(int node_id) {
+struct table_entry* st_find_by_id(int node_id) {
    struct table_entry *en;
    for (en = table.start; en != NULL; en = en->next) {
       if (en->node_id == node_id)

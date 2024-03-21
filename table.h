@@ -8,7 +8,7 @@ struct arg {
 
 struct table_entry {
     char name[50];
-    int type; // 0 for int, 1 for bool
+    int type; // 0 for bool, 1 for int, 
     int node_id;
     char scope[50];
     int let_id;
@@ -28,8 +28,8 @@ int st_get_type(struct ast *);
 void st_print();
 void st_free();
 struct table_entry *st_find_entry(char *name, char *scope);
-struct table_entry *get_entry(char *name, int id);
-struct table_entry *get_func(char *name);
-int is_func_unique(char *name);
-struct table_entry *find_by_id(int node_id);
+struct table_entry *st_get_entry(char *name, int id);
+struct table_entry *st_get_func(char *name);
+int st_is_func_unique(char *name);
+struct table_entry *st_find_by_id(int node_id);
 #endif
