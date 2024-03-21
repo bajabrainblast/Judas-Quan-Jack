@@ -2,10 +2,8 @@ CC	= gcc
 YACC= yacc
 LEX	= lex
 
-# stack.o not in use?
-
-comp:	y.tab.c lex.yy.c ast.c comp.c stack.o table.o helpers.o visitors.o
-	$(CC) -g lex.yy.c y.tab.c ast.c comp.c stack.o table.o helpers.o visitors.o -o comp
+comp:	y.tab.c lex.yy.c ast.c comp.c stack.o table.o helpers.o visitors.o map.o
+	$(CC) -g lex.yy.c y.tab.c ast.c comp.c stack.o table.o helpers.o visitors.o map.o -o comp
 
 y.tab.c: parser.y
 	$(YACC) -d parser.y
@@ -24,6 +22,9 @@ helpers.o: helpers.c helpers.h
 
 visitors.o: visitors.c visitors.h
 	$(CC) -c visitors.c
+
+map.o: map.c map.h
+	$(CC) -c map.c
 
 clean: 
 	rm comp lex.yy.c y.tab.c y.tab.h *.o
