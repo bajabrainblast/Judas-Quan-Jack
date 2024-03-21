@@ -307,21 +307,214 @@ int match_num_args_func(struct ast *node) {
    return 0;
 }
 
-int fill_map(struct ast *node) {
-   struct table_entry *sten = st_find_by_id(node->id);
-   int type = 2; // 0 for bool, 1 for int, 2 for unknown
+int init_map(struct ast *node) {
+   int type = 2;
 
-   if (sten != NULL) 
-      type = sten->type;
-   else if (isArithematic(node->token) || isArithematicConst(node->token)) 
+   // if this node is defined in symbol table, use that type
+   // if this is a funcdef, search by nodeid
+   struct table_entry *st_en = st_find_by_id(node->id);
+   if (st_en != NULL) 
+      type = st_en->type;
+   
+   // if this is the name of a func, search by name and scope="prog"
+   st_en = st_find_entry(node->token, "prog");
+   if (st_en != NULL)
+      type = st_en->type;
+   
+   // if this node is a const/explicit, use that type
+   else if (isArithematic(node->token) || isArithematicConst(node->token) \
+      || !strcmp(node->token, "int") || !strcmp(node->token, "ret int")) 
       type = 1;
-   else if (isBoolean(node->token) || isBooleanConst(node->token))
-      type = 0;   
-   else if (!strcmp(node->token, "funcdef"))
-      ;
-   else if (!strcmp(node->token, "let"))
-      ;
+   else if (isBoolean(node->token) || isBooleanConst(node->token) \
+      || !strcmp(node->token, "bool") || !strcmp(node->token, "ret bool"))
+      type = 0; 
 
    tm_append(node, type);
    return 0;
+}
+
+int fill_map(struct ast *node) {
+   struct map_entry *tm_cur, *tm_tmp;
+   struct table_entry *st_tmp;
+   struct ast *a_tmp;
+   int i;
+   // skip if already set
+   tm_cur = tm_find(node);
+   if (tm_cur->type == 2) {
+      //printf("mapping %i:%s\n", node->id, node->token);
+      
+      if (!strcmp(node->token, "if")) {
+         // if second child has type, take it
+         tm_tmp = tm_find(node->child->next->id);
+         if (tm_tmp->type != 2)
+            tm_cur->type = tm_tmp->type;
+         // if third child has type, take it
+         tm_tmp = tm_find(node->child->next->next->id);
+         if (tm_tmp->type != 2)
+            tm_cur->type = tm_tmp->type;
+      }
+      // var declaration
+      else if (!strcmp(node->parent->token, "funcdef")) {
+         // find matching in args
+         st_tmp = st_find_by_id(node->parent->id);
+         for(i=0; i<st_tmp->num_arg; i++) {
+            if (!strcmp(node->token, find_ast_node(st_tmp->args[i].id)->token)) {
+               tm_cur->type = st_tmp->args[i].type;
+               break;
+            }
+         }
+      }
+      // var use
+      else {
+         a_tmp = node->parent;
+         // walk up until let def (if exists)
+         while (a_tmp != NULL && strcmp(a_tmp->token, "let")) 
+            a_tmp = a_tmp->parent;
+         // in a let
+         if (a_tmp != NULL) {
+            // found let. compare args            
+            st_tmp = st_find_by_id(a_tmp->id);
+            for (i=0; i<st_tmp->num_arg; i++) {
+               if (!strcmp(node->token, find_ast_node(st_tmp->args[i].id)->token)) {
+                  tm_cur->type = st_tmp->args[i].type;
+                  break;
+               }
+            }
+         }
+         // must be in a funcdef
+         else {
+            st_tmp = st_find_by_id(get_root(node)->id);
+            for(i=0; i<st_tmp->num_arg; i++) {
+               if (!strcmp(node->token, find_ast_node(st_tmp->args[i].id)->token)) {
+                  tm_cur->type = st_tmp->args[i].type;
+                  break;
+               }
+            }
+         }
+      }
+   }
+   // loop while there are unknowns to discover
+   if (tm_contains_unknowns())
+      return 0; // change to 0
+   else
+      return 1;
+}
+
+int old_fill_map(struct ast *node) {
+   struct map_entry *tmen = tm_find(node), *tmen2;
+   int needsAppend = 0, type, type2;
+   struct table_entry *sten, *sten2, *sten3; 
+
+   // if mapping already exists, and type is not unknown, skip
+   if (tmen != NULL) {
+      if (tmen->type != 2)
+         return 0;
+   }
+   else
+      needsAppend = 1;
+
+   sten = st_find_by_id(node->id);
+   type = 2; // 0 for bool, 1 for int, 2 for unknown
+
+   if (isArithematic(node->token) || isArithematicConst(node->token)) 
+      type = 1;
+   else if (isBoolean(node->token) || isBooleanConst(node->token))
+      type = 0;   
+   else if (!strcmp(node->token, "funcdef")) {
+      // find in symbol table, use symbol table entry's type
+      // for this node, and first child, and next to last child 
+      sten2 = st_find_by_id(node->id);
+      if (sten2 != NULL) {
+         type = sten2->type;
+
+         // first child has type type, 
+         tmen2 = tm_find(node->child->id);
+         if (tmen2 != NULL) 
+            tmen2->type = type;
+         else
+            tm_append(node->child->id, type);
+
+         // children in between are special,
+         struct ast_child *t_child = node->child->next;
+         while (strncmp(t_child->id->token, "ret", 3)) {
+            // pattern goes type var type var...
+            if (!strcmp(t_child->id->token, "int"))
+               type2 = 1;
+            else
+               type2 = 0;
+
+            tmen2 = tm_find(t_child->id);
+            if (tmen2 != NULL)
+               tmen2->type = type2;
+            else
+               tm_append(t_child->id, type2);
+
+            // move onto the var
+            t_child = t_child->next;
+
+            tmen2 = tm_find(t_child->id);
+            if (tmen2 != NULL)
+               tmen2->type = type2;
+            else
+               tm_append(t_child->id, type2);
+
+            t_child = t_child->next;
+         }
+
+         // next to last child has type type
+         tmen2 = tm_find(t_child->id);
+         if (tmen2 != NULL) 
+            tmen2->type = type;
+         else
+            tm_append(node->child->id, type);
+      }
+   }
+   else if (!strcmp(node->token, "let")) { 
+      // should be type of second child
+      tmen2 = tm_find(node->child->next->id);
+      if (tmen2 != NULL && tmen2->type != 2)
+         type = tmen2->type;
+   }
+   else if (!strcmp(node->token, "PEP")) {
+      // should be type of only child
+      tmen2 = tm_find(node->child->id);
+      if (tmen2 != NULL && tmen2->type != 2) 
+         type = tmen2->type;
+   }
+   // use of parameter in func
+   else if (node->is_leaf) {
+      // get root
+      struct ast *root = get_root(node);
+      sten2 = st_find_by_id(root->id);
+      // check symbol table entry for parameters
+      int i;
+      for (i=0; i<50 && (sten2->args[i].id != 0 && sten2->args[i].type != 0); i++) {
+         printf("%s has var %i type %i. my id is %i\n", root->child->id->token, sten2->args[i].id, sten2->args[i].type, node->id);
+         sten3 = st_find_by_id(sten2->args[i].id);
+         if (sten3 != NULL && !strcmp(node->token, sten3->name)) {
+            type = sten2->args[i].type;
+            printf("found match %i\n", node->id);
+            break;
+         }
+      }
+   }
+   else if (sten != NULL) {
+      printf("here for %i:%s\n", node->id, node->token);
+      type = sten->type;
+   }
+   // use of func in func
+   else
+      printf("func here for %i:%s\n", node->id, node->token);
+
+
+   if (needsAppend)  // needs appending to map
+      tm_append(node, type);
+   else              // needs update to type 
+      tmen->type = type;
+
+   // if all unknowns are handled, return 1 to exit loop
+   if (tm_contains_unknowns())
+      return 0;
+   else
+      return 1;
 }

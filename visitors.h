@@ -20,6 +20,8 @@ int duplicate_var_declare(struct ast *node);
 
 int duplicate_arg_func(struct ast *node);
    
+int init_map(struct ast *node);
+
 int fill_map(struct ast *node);
 
 #endif

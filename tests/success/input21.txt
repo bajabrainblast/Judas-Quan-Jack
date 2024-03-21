@@ -1,0 +1,2 @@
+(define-fun funcy bool (let (x (get-int)) (> x 1)))
+(print (funcy))

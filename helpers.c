@@ -5,7 +5,8 @@
 
 int isArithematic(char *op){
   return !strcmp(op, "+") || !strcmp(op, "-") || !strcmp(op, "*") ||
-         !strcmp(op, "div") || !strcmp(op, "mod") || !strcmp(op, "get-int");
+         !strcmp(op, "div") || !strcmp(op, "mod") || !strcmp(op, "get-int") ||
+         !strcmp(op, "getint");
 }
 
 int isArithematicConst(char *op) {
@@ -23,7 +24,8 @@ int isArithematicConst(char *op) {
 int isBoolean(char *op){
   return !strcmp(op, "=") || !strcmp(op, "<") || !strcmp(op, ">") ||
          !strcmp(op, "<=") || !strcmp(op, ">=") || !strcmp(op, "not") ||
-         !strcmp(op, "and") || !strcmp(op, "or")|| !strcmp(op, "get-bool");
+         !strcmp(op, "and") || !strcmp(op, "or") || !strcmp(op, "get-bool") || 
+         !strcmp(op, "getbool");
 }
 
 int isBooleanConst(char *op) {

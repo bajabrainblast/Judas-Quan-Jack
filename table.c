@@ -70,7 +70,7 @@ int st_get_type(struct ast *node){
 
 void st_print() {
     struct table_entry *en;
-    printf("%10s %10s %10s %10s %10s %35s\n", "name", "type", "scope", "let_id", "is_func","args");
+    printf("%10s %10s %10s %10s %10s %10s %35s\n", "name", "type", "scope", "let_id", "is_func", "node_id", "args");
     for (en = table.start; en != NULL; en = en->next) {
         char args_txt[30] = "";
         int i;
@@ -88,7 +88,7 @@ void st_print() {
            strcat(args_txt,arg_item);
         }
         if (!en) continue;
-        printf("%10s %10i %10s %10i %10i %35s\n", en->name, en->type, en->scope, en->let_id, en->is_func,args_txt);
+        printf("%10s %10i %10s %10i %10i %10i %35s\n", en->name, en->type, en->scope, en->let_id, en->is_func, en->node_id, args_txt);
     }
 }
 
