@@ -41,6 +41,8 @@ int main (int argc, char **argv) {
 
     st_print();  // should not print if any failures occured
     print_ast(); 
+
+    visit_ast(well_formed_aop);
   }
   free_ast();
   st_free();

@@ -24,4 +24,6 @@ int init_map(struct ast *node);
 
 int fill_map(struct ast *node);
 
+int well_formed_aop(struct ast *node);
+
 #endif

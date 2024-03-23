@@ -399,3 +399,26 @@ int fill_map(struct ast *node) {
    else
       return 1;
 }
+
+int well_formed_aop(struct ast *node) {
+   if (node->ntoken == 4) {
+      int n = get_child_num(node);
+      int i = 0;
+      struct ast_child *ptr = node->child;
+      for (i = 0; i < n; i ++) {
+         //printf("node %s\n",ptr->id->token);
+         struct map_entry *en = tm_find(ptr->id);
+         if (en == NULL) {
+            return 1; // entry not in the map
+         }
+         else {
+            if (en->type != 1) {
+               printf("Error: one or more operands for %s is not an integer\n",node->token);
+               return 1;
+            }
+         }
+         ptr = ptr->next;
+      }
+   }
+   return 0;
+}
