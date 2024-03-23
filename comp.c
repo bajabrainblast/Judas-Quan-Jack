@@ -43,6 +43,7 @@ int main (int argc, char **argv) {
     print_ast(); 
 
     visit_ast(well_formed_aop);
+    visit_ast(well_formed_bop);
   }
   free_ast();
   st_free();

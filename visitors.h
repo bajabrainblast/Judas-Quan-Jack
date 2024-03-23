@@ -26,4 +26,6 @@ int fill_map(struct ast *node);
 
 int well_formed_aop(struct ast *node);
 
+int well_formed_bop(struct ast *node);
+
 #endif
