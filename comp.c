@@ -44,6 +44,7 @@ int main (int argc, char **argv) {
 
     visit_ast(well_formed_aop);
     visit_ast(well_formed_bop);
+    visit_ast(func_call_args_type);
   }
   free_ast();
   st_free();

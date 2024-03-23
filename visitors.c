@@ -445,3 +445,29 @@ int well_formed_bop(struct ast *node) {
    }
    return 0;
 }
+
+int func_call_args_type(struct ast *node) {
+   //printf("try call %s\n",node->token);
+   if (node->ntoken == 2) {
+      //printf("call %s\n",node->token);
+      struct ast_child *ptr = node->child;
+      int n = get_child_num(node);
+      int i = 0;
+      struct table_entry *table_en = st_get_func(node->token);
+      for (i = 0; i < n; i ++) {
+         struct map_entry *en = tm_find(ptr->id);
+         if (en == NULL) {
+            //printf("not in the map\n");
+            return 1; // entry not in the map
+         }
+         else {
+            if (en->type != table_en->args[i].type) {
+               printf("Argument #%d of %s does not type check with type of %s\n",(i+1),node->token,ptr->id->token);
+               return 1;
+            }
+         }
+         ptr = ptr->next;
+      }
+   }
+   return 0;
+}

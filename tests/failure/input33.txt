@@ -1,0 +1,2 @@
+(define-fun mixtypef (t1 bool) (t2 int) bool (or t1 (< t2 0)))
+(print (mixtypef 2 3))
