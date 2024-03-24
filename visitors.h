@@ -32,4 +32,9 @@ int func_call_args_type(struct ast *node);
 
 int if_first_arg(struct ast *node);
 
+int check_ifs(struct ast *node);
+
+int check_lets(struct ast *node);
+
+
 #endif

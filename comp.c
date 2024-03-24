@@ -27,7 +27,6 @@ int main (int argc, char **argv) {
     if (visit_ast(vars_with_func_names)) return 5;
     if (visit_ast(duplicate_var_declare)) return 6;
     if (visit_ast(duplicate_arg_func)) return 7;
-
     visit_ast(init_map);
     //tm_print();
     // pass over as many times as needed until zero unknowns remain
@@ -46,6 +45,8 @@ int main (int argc, char **argv) {
     visit_ast(well_formed_bop);
     visit_ast(if_first_arg);
     visit_ast(func_call_args_type);
+    visit_ast(check_ifs);
+    visit_ast(check_lets);
   }
   free_ast();
   st_free();
