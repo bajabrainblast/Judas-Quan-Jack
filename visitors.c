@@ -474,6 +474,10 @@ int func_call_args_type(struct ast *node) {
 
 int check_ifs(struct ast *node){
    if (strcmp(node->token, "if")) return 0;
+   if (tm_find(node->child->next->id)->type != tm_find(node->child->next->next->id)->type){
+      printf("Arguments of if do not type check\n");
+      return 1;
+   }
    if (tm_find(node)->type != tm_find(node->child->next->id)->type){
       printf("If-expression does not type check with arguments\n");
       return 2;
