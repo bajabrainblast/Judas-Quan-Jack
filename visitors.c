@@ -471,3 +471,23 @@ int func_call_args_type(struct ast *node) {
    }
    return 0;
 }
+
+int check_ifs(struct ast *node){
+   if (strcmp(node->token, "if")) return 0;
+   if (tm_find(node)->type != tm_find(node->child->next->id)->type){
+      printf("If-expression does not type check with arguments\n");
+      return 2;
+   }
+   return 0; 
+}
+
+int check_lets(struct ast *node){
+   if (strcmp(node->token, "let")) return 0;
+   struct ast_child *child = node->child;
+   if (tm_find(child->id)->type != tm_find(child->next->next->id)->type){
+      printf("Let-variable %s does not type check with expression\n",
+             child->id->token);
+      return 1;
+   }
+   return 0;
+}

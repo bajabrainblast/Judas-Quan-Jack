@@ -30,4 +30,8 @@ int well_formed_bop(struct ast *node);
 
 int func_call_args_type(struct ast *node);
 
+int check_ifs(struct ast *node);
+
+int check_lets(struct ast *node);
+
 #endif
