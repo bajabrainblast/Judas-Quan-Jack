@@ -43,6 +43,7 @@ int main (int argc, char **argv) {
 
     visit_ast(well_formed_aop);
     visit_ast(well_formed_bop);
+    visit_ast(if_first_arg);
     visit_ast(func_call_args_type);
     visit_ast(check_ifs);
     visit_ast(check_lets);

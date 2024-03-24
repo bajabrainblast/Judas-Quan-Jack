@@ -1,0 +1,1 @@
+(print (if (- (get-int) 2) 2 3))

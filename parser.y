@@ -93,7 +93,7 @@ expr: const 									{ $$ = $1;
 	| '(' IF expr expr expr ')' 			{ insert_child($3);
 													  insert_child($4);
 													  insert_child($5);
-													  $$ = insert_node("if",0);
+													  $$ = insert_node("if",6);
 													  pt(14); }
 	| '(' ID exprlist_base ')' 			{ pop(&st);
                                          while (st.top != NULL && st.top->val != (-2)) insert_child(pop(&st));
