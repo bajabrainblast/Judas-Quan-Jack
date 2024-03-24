@@ -471,3 +471,21 @@ int func_call_args_type(struct ast *node) {
    }
    return 0;
 }
+
+int if_first_arg(struct ast *node) {
+   if (node->ntoken == 6) {
+      struct ast_child *ptr = node->child;
+      //printf("if first arg %s\n",ptr->id->token);
+      struct map_entry *en = tm_find(ptr->id);
+      if (en == NULL) {
+         return 1; // not found entry in map
+      }
+      else {
+         if (en->type != 0) {
+            printf("Error: Argument #1 of if do not type check\n");
+            return 1;
+         }
+      }
+   }
+   return 0;
+}
