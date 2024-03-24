@@ -41,6 +41,7 @@ int main (int argc, char **argv) {
     st_print();  // should not print if any failures occured
     print_ast(); 
 
+    visit_ast(check_function_returns);
     visit_ast(well_formed_aop);
     visit_ast(well_formed_bop);
     visit_ast(if_first_arg);

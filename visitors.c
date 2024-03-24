@@ -514,3 +514,27 @@ int check_lets(struct ast *node){
    return 0;
 }
 
+char *convert_type(int type){
+   return type ? "int" : "bool";
+}
+
+int check_function_returns(struct ast *node){
+   struct table_entry *function = st_get_func(node->token);
+   if (node->ntoken != 0 || !function || !strcmp(node->token, "PEP")) return 0;
+   struct ast_child *child;
+   for (child = node->parent->child; child->next; child = child->next);
+   if (tm_find(node)->type != tm_find(child->id)->type){
+      printf("Function %s returns %s where %s is expected\n", node->token,
+             convert_type(tm_find(child->id)->type),
+             convert_type(tm_find(node)->type));
+   }
+   // if (node->ntoken != 2 || !function || !strcmp(node->token, "PEP")) return 0;
+   // if (tm_find(node)->type != function->type ||
+   //     (strcmp(node->parent->token, "PEP") &&
+   //      tm_find(node->parent)->type != function->type)){
+   //    printf("Function call for %s does not type check with function definition\n",
+   //           function->name);
+   //    return 1;
+   // }
+   return 0;
+}
