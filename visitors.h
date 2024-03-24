@@ -1,7 +1,6 @@
 #ifndef VISITORS_H
 #define VISITORS_H
 #include "ast.h"
-#include "table.h"
 
 void visit(struct ast *node);
 
@@ -21,4 +20,18 @@ int duplicate_var_declare(struct ast *node);
 
 int duplicate_arg_func(struct ast *node);
    
+int init_map(struct ast *node);
+
+int fill_map(struct ast *node);
+
+int well_formed_aop(struct ast *node);
+
+int well_formed_bop(struct ast *node);
+
+int func_call_args_type(struct ast *node);
+
+int check_ifs(struct ast *node);
+
+int check_lets(struct ast *node);
+
 #endif

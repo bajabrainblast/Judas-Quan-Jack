@@ -1,0 +1,11 @@
+(define-fun greater (t1 int) (t2 int) bool (< t1 t2))
+(define-fun lesser (t1 int) (t2 int) bool (greater t2 t1))
+(print 
+    (let
+        (x (get-int))
+        (let 
+            (y (get-int))
+            (greater x (< x y))
+        )
+    )
+)

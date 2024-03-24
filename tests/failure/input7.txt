@@ -1,0 +1,2 @@
+(define-fun longif (arg bool) int (if arg (+ 3 5) (and true false)))
+(print (longif true))

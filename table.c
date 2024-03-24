@@ -70,7 +70,7 @@ int st_get_type(struct ast *node){
 
 void st_print() {
     struct table_entry *en;
-    printf("%10s %10s %10s %10s %10s %35s\n", "name", "type", "scope", "let_id", "is_func","args");
+    printf("%10s %10s %10s %10s %10s %10s %35s\n", "name", "type", "scope", "let_id", "is_func", "node_id", "args");
     for (en = table.start; en != NULL; en = en->next) {
         char args_txt[30] = "";
         int i;
@@ -88,7 +88,7 @@ void st_print() {
            strcat(args_txt,arg_item);
         }
         if (!en) continue;
-        printf("%10s %10i %10s %10i %10i %35s\n", en->name, en->type, en->scope, en->let_id, en->is_func,args_txt);
+        printf("%10s %10i %10s %10i %10i %10i %35s\n", en->name, en->type, en->scope, en->let_id, en->is_func, en->node_id, args_txt);
     }
 }
 
@@ -111,7 +111,7 @@ struct table_entry* st_find_entry(char *name, char *scope) {
    return NULL;
 }
 
-struct table_entry *get_entry(char *name, int id){
+struct table_entry *st_get_entry(char *name, int id){
     struct table_entry *en;
     for (en = table.start; en != NULL; en = en->next) {
         if (!strcmp(en->name,name) &&  id == en->node_id) {
@@ -121,7 +121,7 @@ struct table_entry *get_entry(char *name, int id){
    return NULL;
 }
 
-struct table_entry *get_func(char *name){
+struct table_entry *st_get_func(char *name){
     struct table_entry *en;
     for (en = table.start; en != NULL; en = en->next) {
         if (en->is_func && !strcmp(en->name,name)) {
@@ -131,7 +131,7 @@ struct table_entry *get_func(char *name){
    return NULL;
 }
 
-int is_func_unique(char *name){
+int st_is_func_unique(char *name){
     int count = 0;
     struct table_entry *en;
     for (en = table.start; en != NULL; en = en->next) {
@@ -142,7 +142,7 @@ int is_func_unique(char *name){
    return (count > 1);
 }
 
-struct table_entry* find_by_id(int node_id) {
+struct table_entry* st_find_by_id(int node_id) {
    struct table_entry *en;
    for (en = table.start; en != NULL; en = en->next) {
       if (en->node_id == node_id)

@@ -5,7 +5,11 @@
 
 int isArithematic(char *op);
 
+int isArithematicConst(char *op);
+
 int isBoolean(char *op);
+
+int isBooleanConst(char *op);
 
 int getType(struct ast *node);
 

@@ -1,0 +1,1 @@
+(print (let (a (get-int)) (and a (= a 1))))

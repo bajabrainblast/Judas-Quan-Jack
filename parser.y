@@ -72,7 +72,7 @@ expr: const 									{ $$ = $1;
                                          while(st.top != NULL && st.top->val != (-2)) {
                                            insert_child(pop(&st));
                                          };
-													  $$ = insert_node($2,0);
+													  $$ = insert_node($2,5);
 													  pt(10); }
 	| '(' MAOP expr expr exprlist_base ')'	{ insert_child($3);
 													  insert_child($4);
@@ -80,11 +80,11 @@ expr: const 									{ $$ = $1;
                                          while(st.top != NULL && st.top->val != (-2)) {
                                            insert_child(pop(&st));
                                          };
-													  $$ = insert_node($2,0);
+													  $$ = insert_node($2,4);
 													  pt(11); }
 	| '(' AOP expr expr ')' 				{ insert_child($3);
 													  insert_child($4);
-													  $$ = insert_node($2,0);
+													  $$ = insert_node($2,4);
 													  pt(12); }
 	| '(' COMP expr expr ')' 				{ insert_child($3);
 													  insert_child($4);
