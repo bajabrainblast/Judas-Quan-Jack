@@ -291,7 +291,6 @@ int fill_map(struct ast *node) {
             tm_cur->type = tm_tmp->type;
       }
       else if (!strcmp(node->token, "let")) {
-         printf("let\n");
          struct ast_child *ptr = node->child;
          ptr = ptr->next->next; // get the last child
          tm_tmp = tm_find(ptr->id);
