@@ -47,7 +47,7 @@ int fill_table(struct ast *node){
     definition = node->child->next->id;
     if (!strcmp(definition->token, "getbool")) type = 0;
     else if (!strcmp(definition->token, "getint")) type = 1; 
-    else type = getType(node->child->next->next->id);
+    else type = getType(node->child->next->id);
     child = node->child;
     strcpy(name, child->id->token);
     for (parent = node->parent; parent->parent; parent = parent->parent){}
@@ -249,8 +249,9 @@ int init_map(struct ast *node) {
    // if this node is defined in symbol table, use that type
    // if this is a funcdef, search by nodeid
    struct table_entry *st_en = st_find_by_id(node->id);
-   if (st_en != NULL) 
+   if (st_en != NULL && strcmp(st_en->name,"let")) {
       type = st_en->type;
+   }
    
    // if this is the name of a func, search by name and scope="prog"
    st_en = st_find_entry(node->token, "prog");
@@ -288,6 +289,15 @@ int fill_map(struct ast *node) {
          tm_tmp = tm_find(node->child->next->next->id);
          if (tm_tmp->type != 2)
             tm_cur->type = tm_tmp->type;
+      }
+      else if (!strcmp(node->token, "let")) {
+         printf("let\n");
+         struct ast_child *ptr = node->child;
+         ptr = ptr->next->next; // get the last child
+         tm_tmp = tm_find(ptr->id);
+         if (tm_tmp->type != 2) {
+            tm_cur->type = tm_tmp->type;
+         }
       }
       // var declaration
       else if (!strcmp(node->parent->token, "funcdef")) {

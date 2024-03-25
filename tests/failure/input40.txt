@@ -1,0 +1,2 @@
+(define-fun ifun int (get-int))
+(print (if true true (ifun)))

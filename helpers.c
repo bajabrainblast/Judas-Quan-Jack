@@ -22,20 +22,22 @@ int isArithematicConst(char *op) {
 }
 
 int isBoolean(char *op){
-  return !strcmp(op, "=") || !strcmp(op, "<") || !strcmp(op, ">") ||
+  return (!strcmp(op, "=") || !strcmp(op, "<") || !strcmp(op, ">") ||
          !strcmp(op, "<=") || !strcmp(op, ">=") || !strcmp(op, "not") ||
          !strcmp(op, "and") || !strcmp(op, "or") || !strcmp(op, "get-bool") || 
-         !strcmp(op, "getbool");
+         !strcmp(op, "getbool"));
 }
 
 int isBooleanConst(char *op) {
-  return !strcmp(op, "True") || !strcmp(op, "true") ||
-         !strcmp(op, "False") || !strcmp(op, "false");
+  return (!strcmp(op, "True") || !strcmp(op, "true") ||
+         !strcmp(op, "False") || !strcmp(op, "false"));
 }
 
 int getType(struct ast *node){
+  if (isBooleanConst(node->token)) return 0;
   if (isBoolean(node->token)) return 0;
   if (isArithematic(node->token)) return 1;
+  if (isArithematicConst(node->token)) return 1;
   if (!strcmp(node->token, "let")) return getType(node->child->next->id);
   if (!strcmp(node->token, "if")) return getType(node->child->next->id);
   return st_get_type(node);
