@@ -1,2 +1,2 @@
-(define-fun f int (let (x 2) (mod (get-int) x)))
+(define-fun f int (let (x 2) (and (get-bool) true)))
 (print (f))
