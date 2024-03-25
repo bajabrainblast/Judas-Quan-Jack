@@ -402,7 +402,7 @@ int func_call_args_type(struct ast *node) {
          }
          else {
             if (en->type != table_en->args[i].type) {
-               printf("Error: Argument #%d of %s does not type check with type of %s\n",(i+1),node->token,ptr->id->token);
+               printf("Error: Argument #%d of %s does not type check with type of %s\n",(i+1),node->token,find_ast_node(table_en->args[i].id)->token);
                return 1;
             }
          }
