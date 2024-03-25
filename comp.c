@@ -32,18 +32,18 @@ int main (int argc, char **argv) {
     if (visit_ast(duplicate_arg_func)) return cleanup(7);
     visit_ast(init_map);
     while (visit_ast(fill_map) == 0) {
-      //printf("passed\n");
+      printf("passed\n");
     }
     print_ast();
-    //st_print();
-    //tm_print();
+    st_print();
+    tm_print();
+    if (visit_ast(check_ifs)) return cleanup(14);
     if (visit_ast(check_function_returns)) return cleanup(8);
     if (visit_ast(well_formed_aop)) return cleanup(9);
     if (visit_ast(check_function_returns)) return cleanup(10);
     if (visit_ast(well_formed_bop)) return cleanup(11);
     if (visit_ast(if_first_arg)) return cleanup(12);
     if (visit_ast(func_call_args_type)) return cleanup(13);
-    if (visit_ast(check_ifs)) return cleanup(14);
     //if (visit_ast(check_lets)) return cleanup(15);
   }
   return cleanup(0);
