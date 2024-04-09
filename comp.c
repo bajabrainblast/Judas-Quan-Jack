@@ -14,11 +14,22 @@ int cleanup(int error){
   return error;
 }
 
+int cfg(struct ast *node){
+  if (!node->parent) return 0;
+  struct ast_child *fchild = node->parent->child, *lchild;
+  for (lchild = node->parent->child; lchild->next; lchild = lchild->next){}
+  if (!strcmp(node->parent->token, "funcdef") && node != fchild->id && node != lchild->id) return 0;
+  if (strcmp(node->parent->token, "PEP")) printf("%s\n", node->token);
+  else printf("%s\n%s\n", node->parent->token, node->token);
+
+  return 0;
+}
+
 int main (int argc, char **argv) {
   extern struct stack st;
   st.top = NULL;
   extern struct sym_table table;
-  table.start = NULL; 
+  table.start = NULL;
   extern struct type_map map;
   map.start = NULL;
   if (!yyparse()) {
@@ -35,8 +46,8 @@ int main (int argc, char **argv) {
       printf("passed\n");
     }
     print_ast();
-    st_print();
-    tm_print();
+    // st_print();
+    // tm_print();
     if (visit_ast(check_ifs)) return cleanup(14);
     if (visit_ast(check_function_returns)) return cleanup(8);
     if (visit_ast(well_formed_aop)) return cleanup(9);
@@ -46,5 +57,6 @@ int main (int argc, char **argv) {
     if (visit_ast(func_call_args_type)) return cleanup(13);
     //if (visit_ast(check_lets)) return cleanup(15);
   }
+  visit_ast(cfg);
   return cleanup(0);
 }
