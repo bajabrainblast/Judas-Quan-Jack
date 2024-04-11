@@ -316,7 +316,9 @@ int init_map(struct ast *node) {
 
    // if this node is defined in symbol table, use that type
    // if this is a funcdef, search by nodeid
-   struct table_entry *st_en = st_find_by_id(node->id);
+   struct table_entry *st_en;
+   struct table_entry *st_tmp;
+   // struct table_entry *st_en = st_find_by_id(node->id);
    /*
    if (st_en != NULL) 
       type = st_en->type;
@@ -326,7 +328,24 @@ int init_map(struct ast *node) {
    st_en = st_find_entry(node->token, "prog");
    if (st_en != NULL)
       type = st_en->type;
-   else if (!strcmp(node->parent->token, "funcdef")) {
+   else if (!strcmp(node->token, "int") || !strcmp(node->token, "ret int")) {
+      type = 1;
+   }
+   else if (!strcmp(node->token, "bool") || !strcmp(node->token, "ret bool")) {
+      type = 0;
+   }
+   // if this node is a const/explicit, use that type
+   else if (isArithematic(node->token) || isArithematicConst(node->token) \
+      || !strcmp(node->token, "int") || !strcmp(node->token, "ret int")) 
+      type = 1;
+   else if (isBoolean(node->token) || isBooleanConst(node->token) \
+      || !strcmp(node->token, "bool") || !strcmp(node->token, "ret bool"))
+      type = 0; 
+   else if (!strcmp(node->token, "funcdef")) {
+      st_tmp = st_get_func(node->child->id->token);
+      type = st_tmp->type;
+   }
+   else if (node->parent != NULL && !strcmp(node->parent->token, "funcdef")) {
       struct table_entry *st_tmp = st_find_by_id(node->parent->id);
       // find matching in func declare
          // find matching in args
@@ -339,13 +358,6 @@ int init_map(struct ast *node) {
       }
    }
    
-   // if this node is a const/explicit, use that type
-   else if (isArithematic(node->token) || isArithematicConst(node->token) \
-      || !strcmp(node->token, "int") || !strcmp(node->token, "ret int")) 
-      type = 1;
-   else if (isBoolean(node->token) || isBooleanConst(node->token) \
-      || !strcmp(node->token, "bool") || !strcmp(node->token, "ret bool"))
-      type = 0; 
 
    tm_append(node, type);
    return 0;
@@ -404,6 +416,7 @@ int fill_map(struct ast *node) {
          a_tmp = node->parent;
          bool match = false;
          // var declare in let
+         printf("%s",node->token);
          if (!strcmp(a_tmp->token, "let")) {
             st_tmp = st_find_by_id(a_tmp->id);
             if (node->id == a_tmp->child->id->id) {
