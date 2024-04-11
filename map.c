@@ -73,3 +73,12 @@ struct map_entry* tm_find(struct ast *node) {
    }  
    return NULL;
 }
+
+struct map_entry* tm_find_by_name(char *name){
+   struct map_entry *en;
+   for (en = map.start; en != NULL; en=en->next) {
+      if (!strcmp(en->node->token, name))
+         return en;
+   }  
+   return NULL;
+}

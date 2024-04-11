@@ -5,11 +5,11 @@
 
 int isArithematic(char *op){
   return !strcmp(op, "+") || !strcmp(op, "-") || !strcmp(op, "*") ||
-         !strcmp(op, "div") || !strcmp(op, "mod") || !strcmp(op, "get-int") ||
-         !strcmp(op, "getint");
+         !strcmp(op, "div") || !strcmp(op, "mod");
 }
 
 int isArithematicConst(char *op) {
+  if (!strcmp(op, "get-int") || !strcmp(op, "getint")) return 1;
   int i=0, len=strlen(op);
   if (op[0] == '-')
     i++;
@@ -17,20 +17,19 @@ int isArithematicConst(char *op) {
     if (!isdigit(op[i]))
       return 0;
   }
-
   return 1;
 }
 
 int isBoolean(char *op){
-  return (!strcmp(op, "=") || !strcmp(op, "<") || !strcmp(op, ">") ||
+  return !strcmp(op, "=") || !strcmp(op, "<") || !strcmp(op, ">") ||
          !strcmp(op, "<=") || !strcmp(op, ">=") || !strcmp(op, "not") ||
-         !strcmp(op, "and") || !strcmp(op, "or") || !strcmp(op, "get-bool") || 
-         !strcmp(op, "getbool"));
+         !strcmp(op, "and") || !strcmp(op, "or");
 }
 
 int isBooleanConst(char *op) {
   return (!strcmp(op, "True") || !strcmp(op, "true") ||
-         !strcmp(op, "False") || !strcmp(op, "false"));
+         !strcmp(op, "False") || !strcmp(op, "false")) ||
+         !strcmp(op, "get-bool") || !strcmp(op, "getbool");
 }
 
 int getType(struct ast *node){

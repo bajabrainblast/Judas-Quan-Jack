@@ -1,6 +1,8 @@
 #include <string.h>
 #include "y.tab.h"
 #include "ast.h"
+#include "cfg.h"
+#include "helpers.h"
 #include "stack.h"
 #include "table.h"
 #include "visitors.h"
@@ -12,17 +14,6 @@ int cleanup(int error){
   st_free();
   tm_free();
   return error;
-}
-
-int cfg(struct ast *node){
-  if (!node->parent) return 0;
-  struct ast_child *fchild = node->parent->child, *lchild;
-  for (lchild = node->parent->child; lchild->next; lchild = lchild->next){}
-  if (!strcmp(node->parent->token, "funcdef") && node != fchild->id && node != lchild->id) return 0;
-  if (strcmp(node->parent->token, "PEP")) printf("%s\n", node->token);
-  else printf("%s\n%s\n", node->parent->token, node->token);
-
-  return 0;
 }
 
 int main (int argc, char **argv) {
@@ -58,5 +49,6 @@ int main (int argc, char **argv) {
     //if (visit_ast(check_lets)) return cleanup(15);
   }
   visit_ast(cfg);
+  cfg_print();
   return cleanup(0);
 }
