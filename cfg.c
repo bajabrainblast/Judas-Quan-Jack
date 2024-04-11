@@ -28,7 +28,7 @@ struct line *create_line(char *text){
     struct line *line = (struct line *)malloc(sizeof(struct line));
     line->text = strdup(text);
     line->next = NULL;
-    return line; 
+    return line;
 }
 
 struct bblk *create_bblk(struct ast *node, struct line *line){
@@ -92,7 +92,7 @@ char *get_vreg(struct ast *node, char reg[]){
 
 char *form_text(struct ast *node, int type){
     char *text = (char *) malloc(MAX_LINE_SIZE);
-    char reg[MAX_REG_LEN],src1[MAX_REG_LEN], src2[MAX_REG_LEN];
+    char reg[MAX_REG_LEN], src1[MAX_REG_LEN], src2[MAX_REG_LEN], src3[MAX_REG_LEN];
     get_vreg(node, reg);
     switch(type){
         case 0:
@@ -161,6 +161,11 @@ char *form_text(struct ast *node, int type){
             strcat(text, ")");
             break;
         case 4:
+            get_vreg(node->child->id, src1);
+            get_vreg(node->child->next->id, src2);
+            get_vreg(node->child->next->next->id, src3);
+            sprintf(text, "IF %s = true, then %s := %s, else %s := %s",
+                          src1, reg, src2, reg, src3);
             break;
         case 5:
             break;
@@ -233,9 +238,13 @@ int cfg(struct ast *node){
         get_vreg(node, reg);
         rm_create(reg, node);
       } else if (!strcmp(node->token, "if")){
-        printf("If Node: %s\n", node->token);  
+        printf("If Node: %s\n", node->token);
+        struct line *text = create_line(form_text(node, 4));
+        insert_blk(create_bblk(node, text));
+        get_vreg(node, reg);
+        rm_create(reg, node);
       } else if (!strcmp(node->token, "let")){
-        printf("Let Node: %s\n", node->token);  
+        printf("Let Node: %s\n", node->token);
       } else {
         printf("Variable Node: %s\n", node->token);
         struct line *text = create_line(form_text(node, 0));
