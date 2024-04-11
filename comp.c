@@ -32,8 +32,12 @@ int main (int argc, char **argv) {
     // pass over as many times as needed until zero unknowns remain
     st_print();  // should not print if any failures occured
     
-    while (visit_ast(fill_map) == 0) {
+    while (true) {
+      visit_ast(fill_map);
       printf("passed\n");
+      if (!tm_contains_unknowns()) {
+         break;
+      }
     }
     
     //visit_ast(fill_map);

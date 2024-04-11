@@ -396,22 +396,24 @@ int fill_map(struct ast *node) {
       */
       // check function call
       else if (st_get_func(node->token) != NULL) {
-         st_tmp = st_get_func(node->parent->token);
+         st_tmp = st_get_func(node->token);
          tm_cur->type = st_tmp->type;
       }
       // var use
       else {
          a_tmp = node->parent;
+         bool match = false;
          // var declare in let
          if (!strcmp(a_tmp->token, "let")) {
             st_tmp = st_find_by_id(a_tmp->id);
             if (node->id == a_tmp->child->id->id) {
                tm_tmp = tm_find(a_tmp->child->next->id);
                tm_cur->type = tm_tmp->type;
+               match = true;
             }
          }
-         else {
-            // walk up until let def (if exists)
+         // walk up until let def (if exists)
+         if (!match) {
             while (a_tmp != NULL) {
                if (!strcmp(a_tmp->token, "let")) {
                   // found let. compare args            
@@ -424,7 +426,6 @@ int fill_map(struct ast *node) {
                }
                if (!strcmp(a_tmp->token, "funcdef")) {
                   st_tmp = st_find_by_id(get_root(node)->id);
-                  bool match = false;
                   for(i=0; i<st_tmp->num_arg; i++) {
                      if (!strcmp(node->token, find_ast_node(st_tmp->args[i].id)->token)) {
                         tm_cur->type = st_tmp->args[i].type;
@@ -437,7 +438,6 @@ int fill_map(struct ast *node) {
                }
                a_tmp = a_tmp->parent;
             }
-
          }
          // in a let
          // must be in a funcdef
@@ -455,11 +455,14 @@ int fill_map(struct ast *node) {
          */
       }
    }
+   return 0;
    // loop while there are unknowns to discover
+   /*
    if (tm_contains_unknowns())
       return 0; // change to 0
    else
       return 1;
+   */
 }
 
 int well_formed_aop(struct ast *node) {

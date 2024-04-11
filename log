@@ -1,77 +1,98 @@
       name       type      scope     let_id    is_func    node_id                                args
-         x          0          h          0          0         16                                    
-       let          0          h          0          0         22                            x : bool
-       PEP         -1       prog          0          1         24                                    
-         h          1       prog          0          1         25                    a : int, b : int
-         g          1       prog          0          1         26                    a : int, b : int
-a 2 is unknown
-parent funcdef 26 is unknown
-b 4 is unknown
-parent funcdef 26 is unknown
-b 4 is unknown
-parent funcdef 26 is unknown
-a 7 is unknown
-parent + 9 is unknown
-a 7 is unknown
-parent + 9 is unknown
-a 7 is unknown
-parent + 9 is unknown
-var in funcdefb 8 is unknown
-parent + 9 is unknown
-var in funcdefa 11 is unknown
-parent funcdef 25 is unknown
-a 11 is unknown
-parent funcdef 25 is unknown
-a 11 is unknown
-parent funcdef 25 is unknown
-b 13 is unknown
-parent funcdef 25 is unknown
-b 13 is unknown
-parent funcdef 25 is unknown
-a 17 is unknown
-parent g 19 is unknown
-a 17 is unknown
-parent g 19 is unknown
-a 17 is unknown
-parent g 19 is unknown
-a 17 is unknown
-parent g 19 is unknown
-b 18 is unknown
-parent g 19 is unknown
-x 20 is unknown
-parent not 21 is unknown
-x 20 is unknown
-parent not 21 is unknown
+         z         -1                     0          0          3                                    
+       let         -1                     0          0          6                       z :, y :, x :
+         y         -1                     0          0          2                                    
+       let         -1                     0          0          8                            y :, x :
+         x         -1                     0          0          1                                    
+       let         -1                     0          0         10                                 x :
+       PEP          0       prog          0          1         12                                    
+x 1 is unknown
+parent let 10 is unknown
+x 1 is unknown
+parent let 10 is unknown
+x 1 is unknown
+parent let 10 is unknown
+x 1 is unknown
+parent let 10 is unknown
+x 1 is unknown
+parent let 10 is unknown
+x 1 is unknown
+parent let 10 is unknown
+x 1 is unknown
+parent let 10 is unknown
+x 1 is unknown
+parent let 10 is unknown
+x 1 is unknown
+parent let 10 is unknown
+x 1 is unknown
+parent let 10 is unknown
+x 1 is unknown
+parent let 10 is unknown
+x 1 is unknown
+parent let 10 is unknown
+passed
+x 1 is unknown
+parent let 10 is unknown
+x 1 is unknown
+parent let 10 is unknown
+x 1 is unknown
+parent let 10 is unknown
+x 1 is unknown
+parent let 10 is unknown
+x 1 is unknown
+parent let 10 is unknown
+x 1 is unknown
+parent let 10 is unknown
+x 1 is unknown
+parent let 10 is unknown
+x 1 is unknown
+parent let 10 is unknown
+x 1 is unknown
+parent let 10 is unknown
+x 1 is unknown
+parent let 10 is unknown
+x 1 is unknown
+parent let 10 is unknown
+x 1 is unknown
+parent let 10 is unknown
+passed
+x 9 is unknown
+parent let 10 is unknown
+x 9 is unknown
+parent let 10 is unknown
+x 9 is unknown
+parent let 10 is unknown
+x 9 is unknown
+parent let 10 is unknown
+x 9 is unknown
+parent let 10 is unknown
+x 9 is unknown
+parent let 10 is unknown
+x 9 is unknown
+parent let 10 is unknown
+x 9 is unknown
+parent let 10 is unknown
+let 10 is unknown
+parent not 11 is unknown
      token     nodeid       type
-         g          1          1
-         a          2          1
-       int          3          1
-         b          4          1
-       int          5          1
-   ret int          6          1
-         a          7          1
-         b          8          1
-         +          9          1
-         h         10          1
-         a         11          1
-       int         12          1
-         b         13          1
-       int         14          1
-   ret int         15          1
-         x         16          0
-         a         17          1
-         b         18          1
-         g         19          1
-         x         20          0
-       not         21          0
-       let         22          0
-         1         23          1
-       PEP         24         -1
-   funcdef         25          1
-   funcdef         26          1
+         x          1          1
+         y          2          1
+         z          3          1
+         1          4          1
+         z          5          1
+       let          6          1
+         y          7          1
+       let          8          1
+         x          9          1
+       let         10          1
+       not         11          0
+       PEP         12          0
       name       type      scope     let_id    is_func    node_id                                args
-         x          0          h          0          0         16                                    
-       let          0          h          0          0         22                            x : bool
-       PEP         -1       prog          0          1         24                                    
-         h          1       prog          0          1         25                    a : int, b : int
-         g          1       prog          0          1         26                    a : int, b : int
+         z         -1                     0          0          3                                    
+       let         -1                     0          0          6                       z :, y :, x :
+         y         -1                     0          0          2                                    
+       let         -1                     0          0          8                            y :, x :
+         x         -1                     0          0          1                                    
+       let         -1                     0          0         10                                 x :
+       PEP          0       prog          0          1         12                                    
+Error: arguments of not do not type check
