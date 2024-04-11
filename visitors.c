@@ -58,6 +58,7 @@ int fill_table(struct ast *node){
     else type = getType(node->child->next->next->id);
     strcpy(name, node->child->id->token);
     //for (parent = node->parent; parent->parent; parent = parent->parent){}
+    parent = node->parent;
     if (!strcmp(parent->token, "funcdef")){
       strcpy(scope, parent->child->id->token);
     } else if (!strcmp(parent->token, "PEP")){
@@ -316,13 +317,27 @@ int init_map(struct ast *node) {
    // if this node is defined in symbol table, use that type
    // if this is a funcdef, search by nodeid
    struct table_entry *st_en = st_find_by_id(node->id);
+   /*
    if (st_en != NULL) 
       type = st_en->type;
+   */
    
    // if this is the name of a func, search by name and scope="prog"
    st_en = st_find_entry(node->token, "prog");
    if (st_en != NULL)
       type = st_en->type;
+   else if (!strcmp(node->parent->token, "funcdef")) {
+      struct table_entry *st_tmp = st_find_by_id(node->parent->id);
+      // find matching in func declare
+         // find matching in args
+      int i;
+      for(i=0; i<st_tmp->num_arg; i++) {
+         if (!strcmp(node->token, find_ast_node(st_tmp->args[i].id)->token)) {
+            type = st_tmp->args[i].type;
+            break;
+         }
+      }
+   }
    
    // if this node is a const/explicit, use that type
    else if (isArithematic(node->token) || isArithematicConst(node->token) \
@@ -356,7 +371,12 @@ int fill_map(struct ast *node) {
          if (tm_tmp->type != 2)
             tm_cur->type = tm_tmp->type;
       }
+      else if (!strcmp(node->token, "let")) {
+         tm_tmp = tm_find(node->child->next->next->id);
+         tm_cur->type = tm_tmp->type;
+      }
       // var declaration
+      /*
       else if (!strcmp(node->parent->token, "funcdef")) {
          st_tmp = st_find_by_id(node->parent->id);
          // find matching in func declare
@@ -373,34 +393,55 @@ int fill_map(struct ast *node) {
             }
          }
       }
+      */
       // check function call
-      else if (node->parent != NULL && st_get_func(node->parent->token) != NULL) {
+      else if (st_get_func(node->token) != NULL) {
          st_tmp = st_get_func(node->parent->token);
-         for (i=0; i<st_tmp->num_arg; i++) {
-            if (!strcmp(node->token, find_ast_node(st_tmp->args[i].id)->token)) {
-               tm_cur->type = st_tmp->args[i].type;
-               break;
-            }
-         }
+         tm_cur->type = st_tmp->type;
       }
       // var use
       else {
          a_tmp = node->parent;
-         // walk up until let def (if exists)
-         while (a_tmp != NULL && strcmp(a_tmp->token, "let")) 
-            a_tmp = a_tmp->parent;
-         // in a let
-         if (a_tmp != NULL) {
-            // found let. compare args            
+         // var declare in let
+         if (!strcmp(a_tmp->token, "let")) {
             st_tmp = st_find_by_id(a_tmp->id);
-            for (i=0; i<st_tmp->num_arg; i++) {
-               if (!strcmp(node->token, find_ast_node(st_tmp->args[i].id)->token)) {
-                  tm_cur->type = st_tmp->args[i].type;
-                  break;
-               }
+            if (node->id == a_tmp->child->id->id) {
+               tm_tmp = tm_find(a_tmp->child->next->id);
+               tm_cur->type = tm_tmp->type;
             }
          }
+         else {
+            // walk up until let def (if exists)
+            while (a_tmp != NULL) {
+               if (!strcmp(a_tmp->token, "let")) {
+                  // found let. compare args            
+                  st_tmp = st_find_by_id(a_tmp->id);
+                  if (!strcmp(node->token,a_tmp->child->id->token)) {
+                     tm_tmp = tm_find(a_tmp->child->id);
+                     tm_cur->type = tm_tmp->type;
+                     break;
+                  }
+               }
+               if (!strcmp(a_tmp->token, "funcdef")) {
+                  st_tmp = st_find_by_id(get_root(node)->id);
+                  bool match = false;
+                  for(i=0; i<st_tmp->num_arg; i++) {
+                     if (!strcmp(node->token, find_ast_node(st_tmp->args[i].id)->token)) {
+                        tm_cur->type = st_tmp->args[i].type;
+                        match = true;
+                        break;
+                     }
+                  }
+                  if (match)
+                     break;
+               }
+               a_tmp = a_tmp->parent;
+            }
+
+         }
+         // in a let
          // must be in a funcdef
+         /*
          else {
             printf("var in funcdef");
             st_tmp = st_find_by_id(get_root(node)->id);
@@ -411,6 +452,7 @@ int fill_map(struct ast *node) {
                }
             }
          }
+         */
       }
    }
    // loop while there are unknowns to discover
