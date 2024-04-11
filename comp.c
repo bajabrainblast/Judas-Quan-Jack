@@ -37,8 +37,8 @@ int main (int argc, char **argv) {
       printf("passed\n");
     }
     print_ast();
-    // st_print();
-    // tm_print();
+    st_print();
+    tm_print();
     if (visit_ast(check_ifs)) return cleanup(14);
     if (visit_ast(check_function_returns)) return cleanup(8);
     if (visit_ast(well_formed_aop)) return cleanup(9);

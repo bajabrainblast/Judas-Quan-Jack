@@ -267,8 +267,9 @@ void cfg_dot() {
             
             fprintf(fp, "%d->%d\n ", pblk->node->id, blk->node->id);
 
-            // if the block is an if, do something special for the next 2 blks
-            pblk = blk;
+            // if the prev block is an if, do not update pblk
+            if (strncmp(pblk->node->token, "if", 2))
+                pblk = blk;
         }
     }
     
