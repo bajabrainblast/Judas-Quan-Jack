@@ -50,5 +50,6 @@ int main (int argc, char **argv) {
   }
   visit_ast(cfg);
   cfg_print();
+  cfg_dot();
   return cleanup(0);
 }

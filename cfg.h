@@ -44,4 +44,6 @@ void add_function(struct funcs *func);
 void cfg_print();
 void cfg_destroy();
 int cfg(struct ast *node);
+void cfg_dot();
+
 #endif

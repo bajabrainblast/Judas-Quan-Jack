@@ -248,3 +248,32 @@ int cfg(struct ast *node){
 
   return 0;
 }
+
+void cfg_dot() {
+    FILE *fp = fopen("cfg.dot", "w");
+    fprintf(fp, "digraph print {\n ");
+    
+    struct funcs *func;
+    for (func=&cfgs; func; func=func->next) {
+        struct bblk *blk, *pblk = func->func;
+        fprintf(fp, "%d [label=\"%i: %s\", fontname=\"monospace\", style=filled, fillcolor=mintcream];\n ", func->func->node->id, func->func->node->id, func->func->lines->text);
+        // skip the first blk as its just func name and is handled above
+        for (blk=func->func->down; blk; blk=blk->down) {
+            // not sure about the lines? when will there be more than just one?
+            struct line *line;
+            for (line=blk->lines; line; line=line->next) {
+                fprintf(fp, "%d [label=\"%i: %s\", fontname=\"monospace\"];\n ", blk->node->id, blk->node->id, line->text);
+            }
+            
+            fprintf(fp, "%d->%d\n ", pblk->node->id, blk->node->id);
+
+            // if the block is an if, do something special for the next 2 blks
+            pblk = blk;
+        }
+    }
+    
+    fprintf(fp, "}\n ");
+    fclose(fp);
+    system("dot -Tpdf cfg.dot -o cfg.pdf");
+    return;
+}
