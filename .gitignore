@@ -11,3 +11,4 @@ ast.pdf
 *.swp
 .DS_Store
 *.dSYM/
+log
