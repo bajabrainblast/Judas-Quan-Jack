@@ -57,7 +57,7 @@ int fill_table(struct ast *node){
     else if (!strcmp(definition->token, "getint")) type = 1; 
     else type = getType(node->child->next->next->id);
     strcpy(name, node->child->id->token);
-    //for (parent = node->parent; parent->parent; parent = parent->parent){}
+    for (parent = node->parent; parent->parent; parent = parent->parent){}
     parent = node->parent;
     if (!strcmp(parent->token, "funcdef")){
       strcpy(scope, parent->child->id->token);
