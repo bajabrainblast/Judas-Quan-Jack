@@ -30,7 +30,8 @@ int tm_contains_unknowns() {
     struct map_entry *en = map.start;
     while (en != NULL) {
         if (en->type == 2) {
-            //printf("%s %i is unknown\n", en->node->token, en->node->id);
+            printf("%s %i is unknown\n", en->node->token, en->node->id);
+            printf("parent %s %i is unknown\n", en->node->parent->token, en->node->parent->id);
             return 1;
         }
         en = en->next;

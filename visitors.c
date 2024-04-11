@@ -50,14 +50,14 @@ int fill_table(struct ast *node){
     // printf("Node %d: %s\n", node->id, node->token);
     // for (child = node->child; child; child = child->next) visit(child->id);
     struct ast *definition, *parent;
+    int var_type = 3;
     // for (parent = node->parent; parent; parent = parent->parent) visit(parent);
-    definition = node->child->next->id;
+    definition = node->child->next->next->id;
     if (!strcmp(definition->token, "getbool")) type = 0;
     else if (!strcmp(definition->token, "getint")) type = 1; 
     else type = getType(node->child->next->next->id);
-    child = node->child;
-    strcpy(name, child->id->token);
-    for (parent = node->parent; parent->parent; parent = parent->parent){}
+    strcpy(name, node->child->id->token);
+    //for (parent = node->parent; parent->parent; parent = parent->parent){}
     if (!strcmp(parent->token, "funcdef")){
       strcpy(scope, parent->child->id->token);
     } else if (!strcmp(parent->token, "PEP")){
@@ -67,8 +67,11 @@ int fill_table(struct ast *node){
     is_func = false;
     st_append(name, type, node->child->id->id, scope, let_id, args, num_arg, is_func);
     strcpy(name, node->token);
+    if (!strcmp(node->child->next->id->token, "getbool")) var_type = 0;
+    else if (!strcmp(node->child->next->id->token, "getint")) var_type = 1; 
+    else var_type = getType(node->child->next->id);
     args[0].id = node->child->id->id;
-    args[0].type = type;
+    args[0].type = var_type;
     num_arg = 1;
     findNestedLetVars(node->child->next->id, node->child->id->token, node->child->id->id);
     findNestedLetVars(node->child->next->next->id, node->child->id->token, node->child->id->id);
@@ -355,9 +358,25 @@ int fill_map(struct ast *node) {
       }
       // var declaration
       else if (!strcmp(node->parent->token, "funcdef")) {
-         // find matching in args
          st_tmp = st_find_by_id(node->parent->id);
-         for(i=0; i<st_tmp->num_arg; i++) {
+         // find matching in func declare
+         if (!strcmp(node->token, find_ast_node(st_tmp->node_id)->child->id->token)) {
+            tm_cur->type = st_tmp->type;
+         }
+         else {
+            // find matching in args
+            for(i=0; i<st_tmp->num_arg; i++) {
+               if (!strcmp(node->token, find_ast_node(st_tmp->args[i].id)->token)) {
+                  tm_cur->type = st_tmp->args[i].type;
+                  break;
+               }
+            }
+         }
+      }
+      // check function call
+      else if (node->parent != NULL && st_get_func(node->parent->token) != NULL) {
+         st_tmp = st_get_func(node->parent->token);
+         for (i=0; i<st_tmp->num_arg; i++) {
             if (!strcmp(node->token, find_ast_node(st_tmp->args[i].id)->token)) {
                tm_cur->type = st_tmp->args[i].type;
                break;
@@ -383,6 +402,7 @@ int fill_map(struct ast *node) {
          }
          // must be in a funcdef
          else {
+            printf("var in funcdef");
             st_tmp = st_find_by_id(get_root(node)->id);
             for(i=0; i<st_tmp->num_arg; i++) {
                if (!strcmp(node->token, find_ast_node(st_tmp->args[i].id)->token)) {
@@ -426,6 +446,29 @@ int well_formed_aop(struct ast *node) {
 int well_formed_bop(struct ast *node) {
    if (node->ntoken == 5) {
       int n = get_child_num(node);
+      int i = 0;
+      struct ast_child *ptr = node->child;
+      for (i = 0; i < n; i ++) {
+         //printf("node %s\n",ptr->id->token);
+         struct map_entry *en = tm_find(ptr->id);
+         if (en == NULL) {
+            return 1; // entry not in the map
+         }
+         else {
+            if (en->type != 0) {
+               printf("Error: arguments of %s do not type check\n",node->token);
+               return 1;
+            }
+         }
+         ptr = ptr->next;
+      }
+   }
+   return 0;
+}
+
+int well_formed_not(struct ast *node) {
+   if (node->ntoken == 7) {
+      int n = 1;
       int i = 0;
       struct ast_child *ptr = node->child;
       for (i = 0; i < n; i ++) {

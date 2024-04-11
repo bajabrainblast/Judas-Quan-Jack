@@ -64,7 +64,7 @@ expr: const 									{ $$ = $1;
 	| '(' GETINT ')' 							{ $$ = insert_node("getint",0);
 													  pt(8); }
 	| '(' NOT expr ')'						{ insert_child($3);
-													  $$ = insert_node("not",0);
+													  $$ = insert_node("not",7);
 													  pt(9); }
 	| '(' BOP expr expr exprlist_base ')'		{ insert_child($3);
 													  insert_child($4);

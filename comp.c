@@ -30,6 +30,7 @@ int main (int argc, char **argv) {
     visit_ast(init_map);
     //tm_print();
     // pass over as many times as needed until zero unknowns remain
+    st_print();  // should not print if any failures occured
     
     while (visit_ast(fill_map) == 0) {
       printf("passed\n");
@@ -43,6 +44,7 @@ int main (int argc, char **argv) {
 
     visit_ast(well_formed_aop);
     visit_ast(well_formed_bop);
+    visit_ast(well_formed_not);
     visit_ast(if_first_arg);
     visit_ast(func_call_args_type);
     visit_ast(check_ifs);

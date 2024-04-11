@@ -1,0 +1,3 @@
+(define-fun g (a int) (b int) int (+ a b))
+(define-fun h (a int) (b int) int (let (x (g a b)) (not x)))
+(print 1)
