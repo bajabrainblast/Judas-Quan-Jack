@@ -403,6 +403,21 @@ int cfg_construct(struct ast *node) {
                }
                // function call
                else {
+                  struct ast_child *cchild = cnode->child;
+                  strcpy(val,cblk->lines->text);
+                  strcat(val," := ");
+                  strcat(val,"(");
+                  for(;cchild;cchild=cchild->next) {
+                     struct bblk *blk_tmp;
+                     char var_tmp[10];
+                     get_vreg(cchild->id,var_tmp);
+                     blk_tmp = create_bblk(cchild->id, create_line(var_tmp));
+                     insert_bblk_up(cblk,blk_tmp);
+                     strcat(val,var_tmp);
+                     if (cchild->next != NULL)
+                        strcat(val,",");
+                  }
+                  strcat(val,")");
                }
                free(cblk->lines->text);
                cblk->lines->text = strdup(val);
