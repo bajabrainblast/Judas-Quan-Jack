@@ -227,6 +227,7 @@ bool cfg_all_done() {
 void add_child(struct bblk *cblk, struct bblk *tblk) {
    struct bblk_child *child = (struct bblk_child *) malloc(sizeof(struct bblk_child));
    child->id = tblk;
+   child->next = NULL;
    if (cblk->child == NULL) {
       cblk->child = child;
    }
@@ -270,6 +271,7 @@ void add_parent(struct bblk *cblk, struct bblk *tblk) {
    struct bblk_parent *cparent = cblk->parent;
    struct bblk_parent *tparent = (struct bblk_parent *) malloc(sizeof(struct bblk_parent));
    tparent->id = tblk;
+   tparent->next = NULL;
    if (cparent == NULL) {
       cblk->parent = tparent;
    }
@@ -406,6 +408,7 @@ int cfg_construct(struct ast *node) {
                   struct ast_child *cchild = cnode->child;
                   strcpy(val,cblk->lines->text);
                   strcat(val," := ");
+                  strcat(val,cnode->token);
                   strcat(val,"(");
                   for(;cchild;cchild=cchild->next) {
                      struct bblk *blk_tmp;
