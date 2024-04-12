@@ -228,7 +228,7 @@ void remove_parent(struct bblk *cblk, struct bblk *tblk) {
 
 void add_parent(struct bblk *cblk, struct bblk *tblk) {
    struct bblk_parent *cparent = cblk->parent;
-   struct bblk_parent *tparent = (struct bblk_parent *) malloc(struct bblk_parent);
+   struct bblk_parent *tparent = (struct bblk_parent *) malloc(sizeof(struct bblk_parent));
    if (cparent == NULL) {
       cblk->parent = tparent;
    }
@@ -258,7 +258,7 @@ void insert_bblk_up(struct bblk *cblk, struct bblk *tblk) {
    end = tblk;
 }
 
-void add_child(struct bblk *cblk, struct bblk *tblk) {
+void cfg_insert_child(struct bblk *cblk, struct bblk *tblk) {
    struct bblk_child *child = (struct bblk_child *) malloc(sizeof(struct bblk_child));
    child->id = tblk;
    if (cblk->child == NULL) {
@@ -269,7 +269,6 @@ void add_child(struct bblk *cblk, struct bblk *tblk) {
       for (cbblk_child = cblk->child; cbblk_child->next; cbblk_child = cbblk_child->next){};
       cbblk_child->next = child;
    }
-   /*
    if (bblk_child_root == NULL) {
       bblk_child_root = child;
       bblk_child_end = child;
@@ -277,19 +276,6 @@ void add_child(struct bblk *cblk, struct bblk *tblk) {
    else {
       bblk_child_end->next = child;
       bblk_child_end = child;
-   }
-   */
-}
-
-void poppulate_child() {
-   struct bblk *cblk = top;
-   while (cblk) {
-      struct bblk_parent *cparent = cblk->parent;
-      while (cparent) {
-         add_child(cparent->id,cblk);
-         cparent = cparent->next;
-      }
-      cblk = cblk->next;
    }
 }
 
@@ -364,7 +350,6 @@ int cfg_construct(struct ast *node) {
             cblk = cblk->next;
          }
       }
-      populate_child();
       add_function(create_func(top));
    }
 }
