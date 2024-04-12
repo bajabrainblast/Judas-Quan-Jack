@@ -210,6 +210,19 @@ bool cfg_all_done() {
    return true;
 }
 
+void add_child(struct bblk *cblk, struct bblk *tblk) {
+   struct bblk_child *child = (struct bblk_child *) malloc(sizeof(struct bblk_child));
+      child->id = tblk;
+         if (cblk->child == NULL) {
+               cblk->child = child;
+            }
+   else {
+         struct bblk_child *cbblk_child;
+         for (cbblk_child = cblk->child; cbblk_child->next; cbblk_child = cbblk_child->next){};
+         cbblk_child->next = child;
+      }
+}
+
 void remove_parent(struct bblk *cblk, struct bblk *tblk) {
    struct bblk_parent *cparent = cblk->parent;
    if (cparent->id == tblk) {
@@ -224,6 +237,18 @@ void remove_parent(struct bblk *cblk, struct bblk *tblk) {
             free(tparent);
          }
       }
+   }
+}
+
+void populate_child() {
+   struct bblk *cblk = top;
+   while (cblk) {
+      struct bblk_parent *cparent = cblk->parent;
+      while (cparent) {
+         add_child(cparent->id,cblk);
+         cparent = cparent->next;
+      }
+   cblk = cblk->next;
    }
 }
 
@@ -351,6 +376,7 @@ int cfg_construct(struct ast *node) {
             cblk = cblk->next;
          }
       }
+      populate_child();
       add_function(create_func(top));
    }
    return 0;
