@@ -39,6 +39,7 @@ struct bblk *create_bblk(struct ast *node, struct line *line){
     struct bblk *blk = (struct bblk *)malloc(sizeof(struct bblk));
     blk->num = 0;
     blk->done = false;
+    blk->visited = false;
     blk->node = node;
     blk->lines = line;
     blk->up = NULL;
@@ -260,8 +261,9 @@ void populate_child() {
    while (cblk) {
       struct bblk_parent *cparent = cblk->parent;
       while (cparent) {
-         add_child(cparent->id,cblk);
+         struct bblk_parent *tparent = cparent;
          cparent = cparent->next;
+         add_child(tparent->id,cblk);
       }
       cblk = cblk->next;
    }
@@ -509,7 +511,11 @@ int cfg(struct ast *node){
 }
 
 void add_nodes(FILE *fp, struct bblk* cblk) {
+   if (cblk->visited) {
+      return;
+   }
    struct bblk_child *cchild; 
+   cblk->visited = true;
    fprintf(fp, "%d [label=\"%i: %s\", fontname=\"monospace\", style=filled, fillcolor=mintcream];\n ", cblk->node->id, cblk->node->id, cblk->lines->text);
    for (cchild = cblk->child; cchild; cchild = cchild->next) {
       fprintf(fp, "%d->%d\n ", cblk->node->id, cchild->id->node->id);

@@ -22,6 +22,7 @@ struct line {
 struct bblk {
     int num;
     bool done;
+    bool visited;
     struct ast *node;
     struct line *lines;
     struct bblk *up;
