@@ -385,7 +385,7 @@ int cfg_construct(struct ast *node) {
                   v2 = create_bblk(cnode->child->next->id, create_line(var_tmp));
                   sprintf(var_tmp,"v%d",counter);
                   counter ++;
-                  v3 = create_bblk(cnode->child->next->id, create_line(var_tmp));
+                  v3 = create_bblk(cnode->child->next->next->id, create_line(var_tmp));
 
                   //manually link the blocks
                   /*
