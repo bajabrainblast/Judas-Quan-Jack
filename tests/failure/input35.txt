@@ -1,1 +1,4 @@
-(print (not 1))
+(define-fun mixtypef (t1 bool) (t2 int) bool (or t1 (< t2 0)))
+(define-fun printed (t1 int) bool (+ t1 21))
+(print (+ (printed (mixtypef (get-bool) (get-int))) 5))
+

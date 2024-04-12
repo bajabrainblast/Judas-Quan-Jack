@@ -1,1 +1,2 @@
-(print (not (let (x (let (y (let (z 1) z)) y)) x)))
+(define-fun mixtypef (t1 bool) (t2 int) bool (or t1 (< t2 0)))
+(print (+ (mixtypef true 3) 24))

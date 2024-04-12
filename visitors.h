@@ -38,5 +38,6 @@ int check_ifs(struct ast *node);
 
 int check_lets(struct ast *node);
 
+int check_function_returns(struct ast *node);
 
 #endif

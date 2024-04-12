@@ -1,0 +1,2 @@
+(define-fun bfun (v bool) int (if v 1 0))
+(print (bfun 1))

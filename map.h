@@ -17,5 +17,4 @@ void tm_free();
 int tm_exists(struct ast *node);
 struct map_entry* tm_find(struct ast *node);
 
-
 #endif

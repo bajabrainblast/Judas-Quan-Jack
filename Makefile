@@ -27,4 +27,4 @@ map.o: map.c map.h
 	$(CC) -c -g map.c
 
 clean: 
-	rm comp lex.yy.c y.tab.c y.tab.h *.o
+	rm -f comp lex.yy.c y.tab.c y.tab.h *.o

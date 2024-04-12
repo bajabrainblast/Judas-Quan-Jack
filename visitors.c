@@ -11,8 +11,6 @@ int fill_table(struct ast *node){
   int num_arg = 0;
   int type, let_id, is_func;
   if (!strcmp(node->token, "funcdef")) {
-    // printf("Node %d: %s\n", node->id, node->token);
-    // for (child = node->child; child; child = child->next) visit(child->id);
     strcpy(name, node->child->id->token);
     strcpy(scope, "prog");
     int n = get_child_num(node) - 2;
@@ -39,16 +37,12 @@ int fill_table(struct ast *node){
        num_arg ++;
     }
   } else if (!strcmp(node->token, "PEP")){
-    // printf("Node %d: %s\n", node->id, node->token);
-    // for (child = node->child; child; child = child->next) visit(child->id);
     strcpy(name, "PEP");
     strcpy(scope, "prog");
     type = getType(node->child->id); // TODO: Determine type
     let_id = 0;
     is_func = 1;
   } else if (!strcmp(node->token, "let")) {
-    // printf("Node %d: %s\n", node->id, node->token);
-    // for (child = node->child; child; child = child->next) visit(child->id);
     struct ast *definition, *parent;
     int var_type = 3;
     // for (parent = node->parent; parent; parent = parent->parent) visit(parent);
@@ -57,6 +51,7 @@ int fill_table(struct ast *node){
     else if (!strcmp(definition->token, "getint")) type = 1; 
     else type = getType(node->child->next->next->id);
     strcpy(name, node->child->id->token);
+
     for (parent = node->parent; parent->parent; parent = parent->parent){}
     parent = node->parent;
     if (!strcmp(parent->token, "funcdef")){
@@ -87,14 +82,11 @@ int fill_table(struct ast *node){
 
 int declare_var_before_use(struct ast *node) {
    if (node->ntoken == 1) {
-      //printf("%s is var\n",node->token);
       struct ast *tmp = node->parent;
       while (tmp != NULL) {
-         //printf("explore %s\n",tmp->token);
          if (strcmp(tmp->token,"funcdef") == 0) {
             struct table_entry *en = st_find_entry(tmp->child->id->token,"prog");
             if (en == NULL) {
-               // printf("Variable %s not declared FAIL\n",node->token);
                printf("Error: Variable %s not declared\n",node->token);
                return 1;
             }
@@ -102,11 +94,9 @@ int declare_var_before_use(struct ast *node) {
             int i;
             for (i = 0; i < num_arg; i ++) {
                if (strcmp(find_ast_node(en->args[i].id)->token,node->token) == 0) {
-                  // printf("Variable %s is declared before use SUCCESS\n",node->token);
                   return 0;
                }
             }
-            // printf("Variable %s not declared FAIL\n",node->token);
             printf("Error: Variable %s not declared\n",node->token);
             return 1;
          }
@@ -123,14 +113,12 @@ int declare_var_before_use(struct ast *node) {
             }
             for (i = 0; i < num_arg; i ++) {
                if (strcmp(find_ast_node(en->args[i].id)->token,node->token) == 0) {
-                  // printf("Variable %s is declared before use SUCCESS\n",node->token);
                   return 0;
                }
             }
          }
          tmp = tmp->parent;
       }
-      // printf("Variable %s not declared FAIL\n",node->token);
       printf("Error: Variable %s not declared\n",node->token);
       return 1;
    }
@@ -154,12 +142,10 @@ int duplicate_arg_func(struct ast *node) {
             }
          }
          if (count >= 2) {
-            // printf("Duplicate arg %s in function %s FAIL\n",find_ast_node(en->args[i].id)->token,func_name);
             printf("Error: Function argument %s defined twice\n",find_ast_node(en->args[i].id)->token);
             return 1;
          }
       }
-      // printf("No duplicate in function %s SUCCESS\n",func_name);
       return 0;
    }
    return 0;
@@ -167,16 +153,13 @@ int duplicate_arg_func(struct ast *node) {
 
 int duplicate_var_declare(struct ast *node) {
    if (node->ntoken == 3) {
-      //printf("%s is var\n",node->token);
       struct ast *tmp = node->parent;
       struct table_entry *let_entry = st_get_entry("let",node->id);
       char *var_decl = find_ast_node(let_entry->args[0].id)->token;
       while (tmp != NULL) {
-         //printf("explore %s\n",tmp->token);
          if (strcmp(tmp->token,"funcdef") == 0) {
             struct table_entry *en = st_find_entry(tmp->child->id->token,"prog");
             if (en == NULL) {
-               // printf("Variable %s not declared FAIL\n",var_decl);
                printf("Error: Variable %s declared twice\n",var_decl);
                return 1;
             }
@@ -184,12 +167,10 @@ int duplicate_var_declare(struct ast *node) {
             int i;
             for (i = 0; i < num_arg; i ++) {
                if (strcmp(find_ast_node(en->args[i].id)->token,var_decl) == 0) {
-                  // printf("Variable %s is duplicate FAIL\n",var_decl);
                   printf("Error: Variable %s declared twice\n",var_decl);
                   return 1;
                }
             }
-            // printf("Variable %s is NOT duplicate SUCCESS\n",var_decl);
             return 0;
          }
          if (strcmp(tmp->token,"let") == 0) {
@@ -197,9 +178,8 @@ int duplicate_var_declare(struct ast *node) {
             int num_arg = en->num_arg;
             int i;
 	    if (strcmp(find_ast_node(en->args[0].id)->token,var_decl) == 0) {
-		// printf("Variable %s is duplicate FAIL\n",var_decl);
-      printf("Error: Variable %s declared twice\n",var_decl);
-		return 1;
+		   printf("Error: Variable %s declared twice\n",var_decl);
+		   return 1;
 	    }
          }
          tmp = tmp->parent;
@@ -213,26 +193,20 @@ int duplicate_var_declare(struct ast *node) {
 
 int declare_func_before_use(struct ast *node) {
    if (node->ntoken == 2) {
-      //printf("%s is var\n",node->token);
       struct ast *tmp = node->parent;
       struct table_entry *en = st_find_entry(node->token,"prog");
       if (en == NULL) {
-         // printf("Function %s not declared FAIL\n",node->token);
          printf("Error: Function %s not defined\n",node->token);
          return 1;
       }
       struct ast *n = find_ast_node(en->node_id);
       int use_id = node->id;
-      //printf("node id %d\n",use_id);
       int decl_id = en->node_id;
-      //printf("decl id %d\n",decl_id);
       if (decl_id < use_id) {
-         // printf("Function %s not declared before use FAIL\n",node->token);
          printf("Error: Function %s not defined\n",node->token);
          return 1;
       }
       else {
-         // printf("Function %s has been declared before use SUCCESS\n",node->token);
          return 0;
       }
    }
@@ -248,53 +222,19 @@ int unique_func_names(struct ast *node) {
       return 1;
   }
   return 0;
-  // extern struct sym_table table;
-  // struct table_entry *en, *en2;
-
-  // for (en = table.start; en != NULL; en = en->next) {
-    // for each func
-  //   if (en->is_func == 1) {
-  //     for (en2 = en->next; en2 != NULL; en2 = en2->next) {
-  //       if (en2->is_func == 1) {
-  //         // compare against all other funcs
-  //         if (strcmp(en->name, en2->name) == 0)
-  //           return 1; // not unique
-  //       }
-  //     }
-  //   }
-  // }
-  // return 0;
 }
 
 int vars_with_func_names(struct ast *node) {
-  if (node->ntoken == 1 && st_get_func(node->token)){
-    struct table_entry *f = st_get_func(node->token);
-   //  printf("%p\n", f);
-   printf("Error: Variable shares a name of a defined function %s\n",f->name);
-    return 1;
-  }
+   if (node->ntoken == 1 && st_get_func(node->token)){
+      struct table_entry *f = st_get_func(node->token);
+      printf("Error: Variable shares a name of a defined function %s\n",f->name);
+      return 1;
+   }
   return 0;
-  // extern struct sym_table table;
-  // struct table_entry *en, *en2;
-
-  // for (en = table.start; en != NULL; en = en->next) {
-  //   // for each var
-  //   if (en->is_func == 0) {
-  //     for (en2 = en->next; en2 != NULL; en2 = en2->next) {
-  //       if (en2->is_func == 1) {
-  //         // compare against all other funcs
-  //         if (strcmp(en->name, en2->name) == 0)
-  //           return 1; // not unique
-  //       }
-  //     }
-  //   }
-  // }
-  // return 0;
 }
 
 int match_num_args_func(struct ast *node) {
    if (node->ntoken == 2) {
-      //printf("%s is var\n",node->token);
       struct table_entry *en = st_find_entry(node->token,"prog");
       if (en == NULL) {
          printf("Function %s not declared\n",node->token);
@@ -302,11 +242,9 @@ int match_num_args_func(struct ast *node) {
       }
       int use_num_child = get_child_num(node);
       if (use_num_child != en->num_arg) {
-         // printf("Number of args NOT match function %s declaration FAIL\n",node->token);
          printf("Error: Number of arguments in function %s does not match definition\n",node->token);
          return 1;
       }
-      // printf("Number of args match function %s declaration SUCCESS\n",node->token);
    }
    return 0;
 }
@@ -484,7 +422,6 @@ int well_formed_aop(struct ast *node) {
       int i = 0;
       struct ast_child *ptr = node->child;
       for (i = 0; i < n; i ++) {
-         //printf("node %s\n",ptr->id->token);
          struct map_entry *en = tm_find(ptr->id);
          if (en == NULL) {
             return 1; // entry not in the map
@@ -507,7 +444,6 @@ int well_formed_bop(struct ast *node) {
       int i = 0;
       struct ast_child *ptr = node->child;
       for (i = 0; i < n; i ++) {
-         //printf("node %s\n",ptr->id->token);
          struct map_entry *en = tm_find(ptr->id);
          if (en == NULL) {
             return 1; // entry not in the map
@@ -548,9 +484,7 @@ int well_formed_not(struct ast *node) {
 }
 
 int func_call_args_type(struct ast *node) {
-   //printf("try call %s\n",node->token);
    if (node->ntoken == 2) {
-      //printf("call %s\n",node->token);
       struct ast_child *ptr = node->child;
       int n = get_child_num(node);
       int i = 0;
@@ -558,12 +492,11 @@ int func_call_args_type(struct ast *node) {
       for (i = 0; i < n; i ++) {
          struct map_entry *en = tm_find(ptr->id);
          if (en == NULL) {
-            //printf("not in the map\n");
             return 1; // entry not in the map
          }
          else {
             if (en->type != table_en->args[i].type) {
-               printf("Argument #%d of %s does not type check with type of %s\n",(i+1),node->token,ptr->id->token);
+               printf("Error: Argument #%d of %s does not type check with type of %s\n",(i+1),node->token,find_ast_node(table_en->args[i].id)->token);
                return 1;
             }
          }
@@ -576,7 +509,6 @@ int func_call_args_type(struct ast *node) {
 int if_first_arg(struct ast *node) {
    if (node->ntoken == 6) {
       struct ast_child *ptr = node->child;
-      //printf("if first arg %s\n",ptr->id->token);
       struct map_entry *en = tm_find(ptr->id);
       if (en == NULL) {
          return 1; // not found entry in map
@@ -594,11 +526,11 @@ int if_first_arg(struct ast *node) {
 int check_ifs(struct ast *node){
    if (strcmp(node->token, "if")) return 0;
    if (tm_find(node->child->next->id)->type != tm_find(node->child->next->next->id)->type){
-      printf("Arguments of if do not type check\n");
+      printf("Error: Arguments of if do not type check\n");
       return 1;
    }
    if (tm_find(node)->type != tm_find(node->child->next->id)->type){
-      printf("If-expression does not type check with arguments\n");
+      printf("Error: If-expression does not type check with arguments\n");
       return 2;
    }
    return 0; 
@@ -608,10 +540,27 @@ int check_lets(struct ast *node){
    if (strcmp(node->token, "let")) return 0;
    struct ast_child *child = node->child;
    if (tm_find(child->id)->type != tm_find(child->next->next->id)->type){
-      printf("Let-variable %s does not type check with expression\n",
+      printf("Error: Let-variable %s does not type check with expression\n",
              child->id->token);
       return 1;
    }
    return 0;
 }
 
+char *convert_type(int type){
+   return type ? "an int" : "a bool";
+}
+
+int check_function_returns(struct ast *node){
+   struct table_entry *function = st_get_func(node->token);
+   if (node->ntoken != 0 || !function || !strcmp(node->token, "PEP")) return 0;
+   struct ast_child *child;
+   for (child = node->parent->child; child->next; child = child->next);
+   if (tm_find(node)->type != tm_find(child->id)->type){
+      printf("Error: Function %s returns %s, but %s is expected by the definition\n", node->token,
+             convert_type(tm_find(child->id)->type),
+             convert_type(tm_find(node)->type));
+      return 1;
+   }
+   return 0;
+}
