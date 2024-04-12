@@ -1,6 +1,8 @@
 #include <string.h>
 #include "y.tab.h"
 #include "ast.h"
+#include "cfg.h"
+#include "helpers.h"
 #include "stack.h"
 #include "table.h"
 #include "visitors.h"
@@ -18,7 +20,7 @@ int main (int argc, char **argv) {
   extern struct stack st;
   st.top = NULL;
   extern struct sym_table table;
-  table.start = NULL; 
+  table.start = NULL;
   extern struct type_map map;
   map.start = NULL;
   if (!yyparse()) {
@@ -57,5 +59,8 @@ int main (int argc, char **argv) {
     if (visit_ast(func_call_args_type)) return cleanup(13);
     //if (visit_ast(check_lets)) return cleanup(15);
   }
+  visit_ast(cfg_construct);
+  cfg_print();
+  cfg_dot();
   return cleanup(0);
 }

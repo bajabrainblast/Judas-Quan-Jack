@@ -6,9 +6,10 @@ y.tab.c
 y.tab.h
 comp
 *.o
-ast.dot
-ast.pdf
+*.dot
+*.pdf
 *.swp
 .DS_Store
 *.dSYM/
 log
+*.swo
