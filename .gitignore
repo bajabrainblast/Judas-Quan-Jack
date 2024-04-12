@@ -11,3 +11,5 @@ comp
 *.swp
 .DS_Store
 *.dSYM/
+log
+*.swo
