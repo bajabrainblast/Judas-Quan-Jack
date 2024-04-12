@@ -291,7 +291,7 @@ int cfg_construct(struct ast *node) {
       struct bblk *func_main;
       for (lchild = node->child; lchild->next; lchild=lchild->next);
       func_main = create_bblk(lchild->id, create_line(var));
-      func_main->up = top;
+      add_parent(func_main,top);
       top->next = func_main;
       end = func_main;
 
@@ -350,6 +350,7 @@ int cfg_construct(struct ast *node) {
             cblk = cblk->next;
          }
       }
+      add_function(create_func(top));
    }
 }
 

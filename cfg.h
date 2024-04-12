@@ -36,7 +36,7 @@ struct bblk_child {
    struct bblk_child *next;
 };
 
-struct bblk_child {
+struct bblk_parent {
    struct bblk *id;
    struct bblk_parent* next;
 }
