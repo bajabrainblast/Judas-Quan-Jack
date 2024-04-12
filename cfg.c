@@ -387,26 +387,39 @@ int cfg(struct ast *node){
 }
 
 void cfg_dot() {
-    FILE *fp = fopen("cfg.dot", "w");
+    struct bblk *blk;
+    struct bblk_child *chblk;
+    struct funcs *func;
+    struct line *line;
+    FILE *fp;
+
+    /*
+    possible issues:
+    when theres more than one line in the func head
+    */
+
+    fp = fopen("cfg.dot", "w");
     fprintf(fp, "digraph print {\n ");
     
-    struct funcs *func;
+    // add all nodes to dot file
     for (func=&cfgs; func; func=func->next) {
-        struct bblk *blk, *pblk = func->func;
+        // print the func header
         fprintf(fp, "%d [label=\"%i: %s\", fontname=\"monospace\", style=filled, fillcolor=mintcream];\n ", func->func->node->id, func->func->node->id, func->func->lines->text);
         // skip the first blk as its just func name and is handled above
         for (blk=func->func->down; blk; blk=blk->down) {
             // not sure about the lines? when will there be more than just one?
-            struct line *line;
             for (line=blk->lines; line; line=line->next) {
                 fprintf(fp, "%d [label=\"%i: %s\", fontname=\"monospace\"];\n ", blk->node->id, blk->node->id, line->text);
             }
-            
-            fprintf(fp, "%d->%d\n ", pblk->node->id, blk->node->id);
-
-            // if the prev block is an if, do not update pblk
-            if (strncmp(pblk->node->token, "if", 2))
-                pblk = blk;
+        }
+    }
+    // add all links to dot file
+    for (func=&cfgs; func; func=func->next) {
+        for (blk=func->func->down; blk; blk=blk->down) {
+            // for every child, add an edge from blk->num to chblk->id->num
+            for (chblk=blk->child; chblk; chblk=chblk->next) {
+                fprintf(fp, "%d->%d\n ", blk->num, chblk->id->num);
+            }
         }
     }
     
