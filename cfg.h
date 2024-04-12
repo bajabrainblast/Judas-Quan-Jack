@@ -27,12 +27,18 @@ struct bblk {
     struct bblk *up;
     struct bblk *down;
     struct bblk_child *child;
+    struct bblk_parent *parent;
     struct bblk *next;
 };
 
 struct bblk_child {
    struct bblk *id;
    struct bblk_child *next;
+}
+
+struct bblk_child {
+   struct bblk *id;
+   struct bblk_parent* next;
 }
 
 struct funcs {

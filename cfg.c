@@ -209,11 +209,51 @@ bool cfg_all_done() {
    return true;
 }
 
+void remove_parent(struct bblk *cblk, struct bblk *tblk) {
+   struct bblk_parent *cparent = cblk->parent;
+   if (cparent->id == tblk) {
+      cblk->parent = cparent->next;
+      free(cparent);
+   }
+   else {
+      while (cparent->next) {
+         if (cparent->next->id == tblk) {
+            struct bblk_parent *tparent = cparent->next;
+            cparent->next = cparent->next->next;
+            free(tparent);
+         }
+      }
+   }
+}
+
+void add_parent(struct bblk *cblk, struct bblk *tblk) {
+   struct bblk_parent *cparent = cblk->parent;
+   struct bblk_parent *tparent = (struct bblk_parent *) malloc(struct bblk_parent);
+   if (cparent == NULL) {
+      cblk->parent = tparent;
+   }
+   else {
+      while(cparent->next) {
+         cparent = cparent->next;
+      }
+      cparent->next = tparent;
+   }
+}
+
 void insert_bblk_up(struct bblk *cblk, struct bblk *tblk) {
-   cblk->up->down = tblk;
-   tblk->up = cblk->up;
-   tblk->down = cblk;
-   cblk->up = tblk;
+   struct bblk_parent *cparent = cblk->parent;
+   if (cparent == NULL) {
+      add_parent(cblk,tblk);
+   }
+   else {
+      while (cparent) {
+         struct bblk *parent_node = cparent->id;
+         add_parent(tblk,parent_node);
+         cparent = cparent->next;
+         remove_parent(cblk,parent_node);
+      }
+   }
+   add_parent(cblk,tblk);
    end->next = tblk;
    end = tblk;
 }
