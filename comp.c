@@ -48,7 +48,7 @@ int main (int argc, char **argv) {
     if (visit_ast(func_call_args_type)) return cleanup(13);
     //if (visit_ast(check_lets)) return cleanup(15);
   }
-  visit_ast(cfg);
+  visit_ast(cfg_construct);
   cfg_print();
   cfg_dot();
   return cleanup(0);
