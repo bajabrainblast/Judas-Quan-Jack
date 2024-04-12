@@ -388,6 +388,7 @@ int cfg_construct(struct ast *node) {
                   v3 = create_bblk(cnode->child->next->id, create_line(var_tmp));
 
                   //manually link the blocks
+                  /*
                   struct bblk_parent *cparent = cblk->parent;
                   while (cparent) {
                      struct bblk *parent_node = cparent->id;
@@ -395,6 +396,7 @@ int cfg_construct(struct ast *node) {
                      cparent = cparent->next;
                      remove_parent(cblk,parent_node);
                   }
+                  */
                   add_parent(v2,v1);
                   add_parent(v3,v1);
                   add_parent(cblk,v2);
