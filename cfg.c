@@ -123,6 +123,7 @@ void cfg_destroy() {
 
 char *get_vreg(struct ast *node, char reg[]){
     sprintf(reg, "v%d", node->id);
+    return reg;
 }
 
 char *form_text(struct ast *node, int type){
@@ -307,17 +308,15 @@ int cfg_construct(struct ast *node) {
       if (!strcmp(node->token, "funcdef")) {
          top = create_bblk(node->child->id, create_line(node->child->id->token));
          top->done = true;
-         sprintf(var,"v%d",counter);
-         counter ++;
          struct ast_child *lchild;
          for (lchild = node->child; lchild->next; lchild=lchild->next);
+         get_vreg(lchild->id,var);
          func_main = create_bblk(lchild->id, create_line(var));
       }
       if (!strcmp(node->token, "PEP")) {
          top = create_bblk(node, create_line("PEP"));
          top->done = true;
-         sprintf(var,"v%d",counter);
-         counter ++;
+         get_vreg(node->child->id,var);
          func_main = create_bblk(node->child->id, create_line(var));
       }
       add_parent(func_main,top);
@@ -342,8 +341,7 @@ int cfg_construct(struct ast *node) {
                   for(;cchild;cchild=cchild->next) {
                      struct bblk *blk_tmp;
                      char var_tmp[10];
-                     sprintf(var_tmp,"v%d",counter);
-                     counter ++;
+                     get_vreg(cchild->id,var_tmp);
                      blk_tmp = create_bblk(cchild->id, create_line(var_tmp));
                      insert_bblk_up(cblk,blk_tmp);
                      strcat(val,var_tmp);
@@ -357,16 +355,14 @@ int cfg_construct(struct ast *node) {
                   struct bblk *v3 = NULL;
                   char var_tmp[10];
                   char var_def[36];
-                  sprintf(var_tmp,"v%d",counter);
-                  counter ++;
+                  get_vreg(cnode->child->next->id,var_tmp);
                   v2 = create_bblk(cnode->child->next->id, create_line(var_tmp));
                   insert_bblk_up(cblk,v2);
                   sprintf(var_def,"%s := %s",cnode->child->id->token,var_tmp);
                   v1 = create_bblk(cnode->child->id, create_line(var_def));
                   v1->done = true;
                   insert_bblk_up(cblk,v1);
-                  sprintf(var_tmp,"v%d",counter);
-                  counter ++;
+                  get_vreg(cnode->child->next->next->id,var_tmp);
                   v3 = create_bblk(cnode->child->next->next->id, create_line(var_tmp));
                   insert_bblk_up(cblk,v3);
                   sprintf(val,"%s := %s",cblk->lines->text,var_tmp);
@@ -376,15 +372,12 @@ int cfg_construct(struct ast *node) {
                   struct bblk *v2 = NULL;
                   struct bblk *v3 = NULL;
                   char var_tmp[10];
-                  sprintf(var_tmp,"v%d",counter);
-                  counter ++;
+                  get_vreg(cnode->child->id,var_tmp);
                   v1 = create_bblk(cnode->child->id, create_line(var_tmp));
                   insert_bblk_up(cblk,v1);
-                  sprintf(var_tmp,"v%d",counter);
-                  counter ++;
+                  get_vreg(cnode->child->next->id,var_tmp);
                   v2 = create_bblk(cnode->child->next->id, create_line(var_tmp));
-                  sprintf(var_tmp,"v%d",counter);
-                  counter ++;
+                  get_vreg(cnode->child->next->next->id,var_tmp);
                   v3 = create_bblk(cnode->child->next->next->id, create_line(var_tmp));
 
                   //manually link the blocks
@@ -407,6 +400,9 @@ int cfg_construct(struct ast *node) {
                   end->next = v3;
                   end = v3;
                   sprintf(val,"IF %s = true, then %s := %s, else %s := %s",v1->lines->text,cblk->lines->text,v2->lines->text,cblk->lines->text,v3->lines->text);
+               }
+               // function call
+               else {
                }
                free(cblk->lines->text);
                cblk->lines->text = strdup(val);
