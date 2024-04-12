@@ -43,7 +43,7 @@ struct bblk *create_bblk(struct ast *node, struct line *line){
     blk->lines = line;
     blk->up = NULL;
     blk->down = NULL;
-    blk->bblk_child = NULL;
+    blk->child = NULL;
     blk->next = NULL;
     return blk;
 }
@@ -97,10 +97,10 @@ void cfg_destroy() {
    while (cbblk_child) {
       struct bblk_child *tbbk_child = cbblk_child;
       cbblk_child = cbblk_child->next;
-      free(tbblk_child);
+      free(cbblk_child);
    }
    while (cblk) {
-      struct bbk *tblk = cblk;
+      struct bblk *tblk = cblk;
       cblk = cblk->next;
       free(tblk->lines->text);
       free(tblk);
@@ -258,7 +258,7 @@ void insert_bblk_up(struct bblk *cblk, struct bblk *tblk) {
    end = tblk;
 }
 
-void insert_child(struct bblk *cblk, struct bblk *tblk) {
+void cfg_insert_child(struct bblk *cblk, struct bblk *tblk) {
    struct bblk_child *child = (struct bblk_child *) malloc(sizeof(struct bblk_child));
    child->id = tblk;
    if (cblk->child == NULL) {
@@ -266,7 +266,7 @@ void insert_child(struct bblk *cblk, struct bblk *tblk) {
    }
    else {
       struct bblk_child *cbblk_child;
-      for (cbblk_child = cblk->child; cbblk_child->next; cbblk_child = cbblk->next){};
+      for (cbblk_child = cblk->child; cbblk_child->next; cbblk_child = cbblk_child->next){};
       cbblk_child->next = child;
    }
    if (bblk_child_root == NULL) {
@@ -283,14 +283,14 @@ int cfg_construct(struct ast *node) {
    if (!strcmp(node->token, "funcdef")) {
       struct line *text = create_line(node->child->id->token);
       char var[10];
-      top = create_blk(node->child->id, node->child->id->token);
+      top = create_bblk(node->child->id, create_line(node->child->id->token));
       top->done = true;
       sprintf(var,"v%d",counter);
       counter ++;
       struct ast_child *lchild;
       struct bblk *func_main;
       for (lchild = node->child; lchild->next; lchild=lchild->next);
-      func_main = create_blk(lchild->id,var);
+      func_main = create_bblk(lchild->id, create_line(var));
       func_main->up = top;
       top->next = func_main;
       end = func_main;
@@ -309,13 +309,13 @@ int cfg_construct(struct ast *node) {
                   char opt[6];
                   sprintf(opt," %s ", cnode->token);
                   strcpy(val,cblk->lines->text);
-                  strcat(val," := ")
+                  strcat(val," := ");
                   for(;cchild;cchild=cchild->next) {
                      struct bblk *blk_tmp;
                      char var_tmp[10];
                      sprintf(var_tmp,"v%d",counter);
                      counter ++;
-                     blk_tmp = create_blk(cchild->id, var_tmp);
+                     blk_tmp = create_bblk(cchild->id, create_line(var_tmp));
                      insert_bblk_up(cblk,blk_tmp);
                      strcat(val,var_tmp);
                      if (cchild->next != NULL)
@@ -330,21 +330,21 @@ int cfg_construct(struct ast *node) {
                   char var_def[36];
                   sprintf(var_tmp,"v%d",counter);
                   counter ++;
-                  v2 = create_blk(cnode->child->next->id, var_tmp);
+                  v2 = create_bblk(cnode->child->next->id, create_line(var_tmp));
                   insert_bblk_up(cblk,v2);
                   sprintf(var_def,"%s := %s",cnode->child->id->token,var_tmp);
-                  v1 = create_blk(cnode->child->id, var_def);
+                  v1 = create_bblk(cnode->child->id, create_line(var_def));
                   insert_bblk_up(cblk,v1);
                   sprintf(var_tmp,"v%d",counter);
                   counter ++;
-                  v3 = create_blk(cnode->child->next->next->id, var_tmp);
+                  v3 = create_bblk(cnode->child->next->next->id, create_line(var_tmp));
                   insert_bblk_up(cblk,v3);
                   sprintf(val,"%s := %s",cblk->lines->text,var_tmp);
                }
                else if (!strcmp(cnode->token,"if")) {
                }
-               free(cnode->lines->text);
-               cnode->linex->text = strdup(val);
+               free(cblk->lines->text);
+               cblk->lines->text = strdup(val);
                cblk->done = true;
             }
             cblk = cblk->next;
@@ -427,26 +427,39 @@ int cfg(struct ast *node){
 }
 
 void cfg_dot() {
-    FILE *fp = fopen("cfg.dot", "w");
+    struct bblk *blk;
+    struct bblk_child *chblk;
+    struct funcs *func;
+    struct line *line;
+    FILE *fp;
+
+    /*
+    possible issues:
+    when theres more than one line in the func head
+    */
+
+    fp = fopen("cfg.dot", "w");
     fprintf(fp, "digraph print {\n ");
     
-    struct funcs *func;
+    // add all nodes to dot file
     for (func=&cfgs; func; func=func->next) {
-        struct bblk *blk, *pblk = func->func;
+        // print the func header
         fprintf(fp, "%d [label=\"%i: %s\", fontname=\"monospace\", style=filled, fillcolor=mintcream];\n ", func->func->node->id, func->func->node->id, func->func->lines->text);
         // skip the first blk as its just func name and is handled above
         for (blk=func->func->down; blk; blk=blk->down) {
             // not sure about the lines? when will there be more than just one?
-            struct line *line;
             for (line=blk->lines; line; line=line->next) {
                 fprintf(fp, "%d [label=\"%i: %s\", fontname=\"monospace\"];\n ", blk->node->id, blk->node->id, line->text);
             }
-            
-            fprintf(fp, "%d->%d\n ", pblk->node->id, blk->node->id);
-
-            // if the prev block is an if, do not update pblk
-            if (strncmp(pblk->node->token, "if", 2))
-                pblk = blk;
+        }
+    }
+    // add all links to dot file
+    for (func=&cfgs; func; func=func->next) {
+        for (blk=func->func->down; blk; blk=blk->down) {
+            // for every child, add an edge from blk->num to chblk->id->num
+            for (chblk=blk->child; chblk; chblk=chblk->next) {
+                fprintf(fp, "%d->%d\n ", blk->num, chblk->id->num);
+            }
         }
     }
     
