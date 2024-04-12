@@ -43,7 +43,7 @@ struct bblk *create_bblk(struct ast *node, struct line *line){
     blk->lines = line;
     blk->up = NULL;
     blk->down = NULL;
-    blk->bblk_child = NULL;
+    blk->child = NULL;
     blk->next = NULL;
     return blk;
 }
@@ -97,10 +97,10 @@ void cfg_destroy() {
    while (cbblk_child) {
       struct bblk_child *tbbk_child = cbblk_child;
       cbblk_child = cbblk_child->next;
-      free(tbblk_child);
+      free(cbblk_child);
    }
    while (cblk) {
-      struct bbk *tblk = cblk;
+      struct bblk *tblk = cblk;
       cblk = cblk->next;
       free(tblk->lines->text);
       free(tblk);
@@ -226,7 +226,7 @@ void insert_child(struct bblk *cblk, struct bblk *tblk) {
    }
    else {
       struct bblk_child *cbblk_child;
-      for (cbblk_child = cblk->child; cbblk_child->next; cbblk_child = cbblk->next){};
+      for (cbblk_child = cblk->child; cbblk_child->next; cbblk_child = cblk->next){};
       cbblk_child->next = child;
    }
    if (bblk_child_root == NULL) {
@@ -269,7 +269,7 @@ int cfg_construct(struct ast *node) {
                   char opt[6];
                   sprintf(opt," %s ", cnode->token);
                   strcpy(val,cblk->lines->text);
-                  strcat(val," := ")
+                  strcat(val," := ");
                   for(;cchild;cchild=cchild->next) {
                      struct bblk *blk_tmp;
                      char var_tmp[10];
@@ -303,8 +303,8 @@ int cfg_construct(struct ast *node) {
                }
                else if (!strcmp(cnode->token,"if")) {
                }
-               free(cnode->lines->text);
-               cnode->linex->text = strdup(val);
+               free(cblk->lines->text);
+               cblk->lines->text = strdup(val);
                cblk->done = true;
             }
             cblk = cblk->next;

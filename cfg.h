@@ -33,7 +33,7 @@ struct bblk {
 struct bblk_child {
    struct bblk *id;
    struct bblk_child *next;
-}
+};
 
 struct funcs {
     struct bblk *func;
