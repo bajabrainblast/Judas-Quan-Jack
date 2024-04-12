@@ -21,11 +21,19 @@ struct line {
 
 struct bblk {
     int num;
+    bool done;
     struct ast *node;
     struct line *lines;
     struct bblk *up;
     struct bblk *down;
+    struct bblk_child *child;
+    struct bblk *next;
 };
+
+struct bblk_child {
+   struct bblk *id;
+   struct bblk_child *next;
+}
 
 struct funcs {
     struct bblk *func;

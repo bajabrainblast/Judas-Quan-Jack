@@ -1,7 +1,11 @@
 #include "cfg.h"
 struct bblk *top;
+struct bblk *end;
+struct bblk_child *bblk_child_root;
+struct bblk_child *bblk_child_end;
 struct funcs cfgs;
 struct reg_map *rmap;
+int counter = 1;
 
 struct reg_map *rm_create(char *reg, struct ast *node){
     struct reg_map *mapping = (struct reg_map *) malloc(sizeof(struct reg_map));
@@ -34,10 +38,13 @@ struct line *create_line(char *text){
 struct bblk *create_bblk(struct ast *node, struct line *line){
     struct bblk *blk = (struct bblk *)malloc(sizeof(struct bblk));
     blk->num = 0;
+    blk->done = false;
     blk->node = node;
     blk->lines = line;
     blk->up = NULL;
     blk->down = NULL;
+    blk->bblk_child = NULL;
+    blk->next = NULL;
     return blk;
 }
 
@@ -84,7 +91,21 @@ void cfg_print(){
     }
 }
 
-void cfg_destroy();
+void cfg_destroy() {
+   struct bblk_child *cbblk_child = bblk_child_root;
+   struct bblk *cblk = top;
+   while (cbblk_child) {
+      struct bblk_child *tbbk_child = cbblk_child;
+      cbblk_child = cbblk_child->next;
+      free(tbblk_child);
+   }
+   while (cblk) {
+      struct bbk *tblk = cblk;
+      cblk = cblk->next;
+      free(tblk->lines->text);
+      free(tblk);
+   }
+};
 
 char *get_vreg(struct ast *node, char reg[]){
     sprintf(reg, "v%d", node->id);
@@ -174,6 +195,122 @@ char *form_text(struct ast *node, int type){
             printf("How did you get here?\n");
     }
     return text;
+}
+
+bool cfg_all_done() {
+   struct bblk *cblk;
+   cblk = top;
+   while (cblk) {
+      if (!cblk->done) {
+         return false;
+      }
+      cblk = cblk->down;
+   }
+   return true;
+}
+
+void insert_bblk_up(struct bblk *cblk, struct bblk *tblk) {
+   cblk->up->down = tblk;
+   tblk->up = cblk->up;
+   tblk->down = cblk;
+   cblk->up = tblk;
+   end->next = tblk;
+   end = tblk;
+}
+
+void insert_child(struct bblk *cblk, struct bblk *tblk) {
+   struct bblk_child *child = (struct bblk_child *) malloc(sizeof(struct bblk_child));
+   child->id = tblk;
+   if (cblk->child == NULL) {
+      cblk->child = child;
+   }
+   else {
+      struct bblk_child *cbblk_child;
+      for (cbblk_child = cblk->child; cbblk_child->next; cbblk_child = cbblk->next){};
+      cbblk_child->next = child;
+   }
+   if (bblk_child_root == NULL) {
+      bblk_child_root = child;
+      bblk_child_end = child;
+   }
+   else {
+      bblk_child_end->next = child;
+      bblk_child_end = child;
+   }
+}
+
+int cfg_construct(struct ast *node) {
+   if (!strcmp(node->token, "funcdef")) {
+      struct line *text = create_line(node->child->id->token);
+      char var[10];
+      top = create_blk(node->child->id, node->child->id->token);
+      top->done = true;
+      sprintf(var,"v%d",counter);
+      counter ++;
+      struct ast_child *lchild;
+      struct bblk *func_main;
+      for (lchild = node->child; lchild->next; lchild=lchild->next);
+      func_main = create_blk(lchild->id,var);
+      func_main->up = top;
+      top->next = func_main;
+      end = func_main;
+
+      while(!cfg_all_done()) {
+         struct bblk *cblk = top;
+         while (cblk) {
+            if (!cblk->done) {
+               struct ast *cnode = cblk->node;
+               char val[36];
+               if (cnode->child == NULL) {
+                  sprintf(val,"%s := %s",cblk->lines->text, cnode->token);
+               }
+               else if (isArithematic(cnode->token) || isBoolean(cnode->token)) {
+                  struct ast_child *cchild = cnode->child;
+                  char opt[6];
+                  sprintf(opt," %s ", cnode->token);
+                  strcpy(val,cblk->lines->text);
+                  strcat(val," := ")
+                  for(;cchild;cchild=cchild->next) {
+                     struct bblk *blk_tmp;
+                     char var_tmp[10];
+                     sprintf(var_tmp,"v%d",counter);
+                     counter ++;
+                     blk_tmp = create_blk(cchild->id, var_tmp);
+                     insert_bblk_up(cblk,blk_tmp);
+                     strcat(val,var_tmp);
+                     if (cchild->next != NULL)
+                        strcat(val,opt);
+                  }
+               }
+               else if (!strcmp(cnode->token,"let")) {
+                  struct bblk *v1 = NULL;
+                  struct bblk *v2 = NULL;
+                  struct bblk *v3 = NULL;
+                  char var_tmp[10];
+                  char var_def[36];
+                  sprintf(var_tmp,"v%d",counter);
+                  counter ++;
+                  v2 = create_blk(cnode->child->next->id, var_tmp);
+                  insert_bblk_up(cblk,v2);
+                  sprintf(var_def,"%s := %s",cnode->child->id->token,var_tmp);
+                  v1 = create_blk(cnode->child->id, var_def);
+                  insert_bblk_up(cblk,v1);
+                  sprintf(var_tmp,"v%d",counter);
+                  counter ++;
+                  v3 = create_blk(cnode->child->next->next->id, var_tmp);
+                  insert_bblk_up(cblk,v3);
+                  sprintf(val,"%s := %s",cblk->lines->text,var_tmp);
+               }
+               else if (!strcmp(cnode->token,"if")) {
+               }
+               free(cnode->lines->text);
+               cnode->linex->text = strdup(val);
+               cblk->done = true;
+            }
+            cblk = cblk->next;
+         }
+      }
+   }
 }
 
 int cfg(struct ast *node){
