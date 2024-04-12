@@ -43,6 +43,7 @@ struct bblk *create_bblk(struct ast *node, struct line *line){
     blk->lines = line;
     blk->up = NULL;
     blk->down = NULL;
+    blk->parent = NULL;
     blk->child = NULL;
     blk->next = NULL;
     return blk;
@@ -352,6 +353,7 @@ int cfg_construct(struct ast *node) {
       }
       add_function(create_func(top));
    }
+   return 0;
 }
 
 int cfg(struct ast *node){
@@ -447,19 +449,32 @@ void cfg_dot() {
         // print the func header
         fprintf(fp, "%d [label=\"%i: %s\", fontname=\"monospace\", style=filled, fillcolor=mintcream];\n ", func->func->node->id, func->func->node->id, func->func->lines->text);
         // skip the first blk as its just func name and is handled above
-        for (blk=func->func->down; blk; blk=blk->down) {
+        /* for (blk=func->func->down; blk; blk=blk->down) {
             // not sure about the lines? when will there be more than just one?
             for (line=blk->lines; line; line=line->next) {
+                fprintf(fp, "%d [label=\"%i: %s\", fontname=\"monospace\"];\n ", blk->node->id, blk->node->id, line->text);
+            }
+        } */
+        for (chblk=func->func->child; chblk; chblk=chblk->next) {
+            for (line=chblk->id->lines; line; line=line->next) {
                 fprintf(fp, "%d [label=\"%i: %s\", fontname=\"monospace\"];\n ", blk->node->id, blk->node->id, line->text);
             }
         }
     }
     // add all links to dot file
     for (func=&cfgs; func; func=func->next) {
-        for (blk=func->func->down; blk; blk=blk->down) {
+        /* for (blk=func->func->down; blk; blk=blk->down) {
             // for every child, add an edge from blk->num to chblk->id->num
             for (chblk=blk->child; chblk; chblk=chblk->next) {
                 fprintf(fp, "%d->%d\n ", blk->num, chblk->id->num);
+            }
+        } */
+        // handle func head
+        fprintf(fp, "%d->%d\n ", func->func->num, func->func->child->id->num);
+        
+        for (chblk=func->func->child; chblk; chblk=chblk->next) {
+            for (line=chblk->id->lines; line; line=line->next) {
+                fprintf(fp, "%d->%d\n ", func->func->num, chblk->id->num);
             }
         }
     }
