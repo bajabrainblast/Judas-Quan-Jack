@@ -401,6 +401,7 @@ int cfg_construct(struct ast *node) {
                   add_parent(v3,v1);
                   add_parent(cblk,v2);
                   add_parent(cblk,v3);
+                  remove_parent(cblk,v1);
                   end->next = v2;
                   end = v2;
                   end->next = v3;
