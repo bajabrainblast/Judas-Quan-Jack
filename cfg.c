@@ -332,7 +332,13 @@ int cfg_construct(struct ast *node) {
                struct ast *cnode = cblk->node;
                char val[60];
                if (cnode->child == NULL) {
-                  sprintf(val,"%s := %s",cblk->lines->text, cnode->token);
+                  if (st_get_func(cnode->token) != NULL) {
+                     sprintf(val,"%s := %s()",cblk->lines->text, cnode->token);
+
+                  }
+                  else {
+                     sprintf(val,"%s := %s",cblk->lines->text, cnode->token);
+                  }
                }
                else if (isArithematic(cnode->token) || isBoolean(cnode->token)) {
                   struct ast_child *cchild = cnode->child;
