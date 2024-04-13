@@ -36,7 +36,7 @@ int main (int argc, char **argv) {
     
     //tm_print();
     // pass over as many times as needed until zero unknowns remain
-    st_print();  // should not print if any failures occured
+    //st_print();  // should not print if any failures occured
     
     while (true) {
       visit_ast(fill_map);
@@ -46,8 +46,8 @@ int main (int argc, char **argv) {
       }
     }
     print_ast();
-    st_print();
-    tm_print();
+    //st_print();
+    //tm_print();
 
     if (visit_ast(check_ifs)) return cleanup(14);
     if (visit_ast(check_function_returns)) return cleanup(8);

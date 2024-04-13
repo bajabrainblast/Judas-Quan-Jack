@@ -3,7 +3,7 @@
         (x 
             (let
                 (z (get-int))
-                (if (< z 1) 1 z)
+                (if (< z x) x z)
             )
         ) 
         (let

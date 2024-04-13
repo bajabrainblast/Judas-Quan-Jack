@@ -1,8 +1,6 @@
 #include "cfg.h"
 struct bblk *top;
 struct bblk *end;
-struct bblk_child *bblk_child_root;
-struct bblk_child *bblk_child_end;
 struct funcs cfgs;
 struct reg_map *rmap;
 int counter = 1;
@@ -342,6 +340,9 @@ int cfg_construct(struct ast *node) {
                   sprintf(opt," %s ", cnode->token);
                   strcpy(val,cblk->lines->text);
                   strcat(val," := ");
+                  if (!strcmp(opt," not ")) {
+                     strcat(val,"not ");
+                  }
                   for(;cchild;cchild=cchild->next) {
                      struct bblk *blk_tmp;
                      char var_tmp[10];

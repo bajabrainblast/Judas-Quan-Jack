@@ -83,6 +83,7 @@ int fill_table(struct ast *node){
 int declare_var_before_use(struct ast *node) {
    if (node->ntoken == 1) {
       struct ast *tmp = node->parent;
+      struct ast *old_tmp = node;
       while (tmp != NULL) {
          if (strcmp(tmp->token,"funcdef") == 0) {
             struct table_entry *en = st_find_entry(tmp->child->id->token,"prog");
@@ -101,22 +102,30 @@ int declare_var_before_use(struct ast *node) {
             return 1;
          }
          if (strcmp(tmp->token,"let") == 0) {
-            struct table_entry *en = st_get_entry(tmp->token,tmp->id);
-            int num_arg = en->num_arg;
-            int i;
+            if (tmp->child->next->id != old_tmp) {
+               struct table_entry *en = st_get_entry(tmp->token,tmp->id);
+               int num_arg = en->num_arg;
+               int i;
 
-            struct ast *let_define_node = find_ast_node(en->node_id)->child->next->id;
+               struct ast *let_define_node = find_ast_node(en->node_id)->child->next->id;
 
-            if (find_parent(node,let_define_node) != NULL) {
-               tmp = tmp->parent;
-               continue;
-            }
-            for (i = 0; i < num_arg; i ++) {
-               if (strcmp(find_ast_node(en->args[i].id)->token,node->token) == 0) {
+               if (find_parent(node,let_define_node) != NULL) {
+                  tmp = tmp->parent;
+                  continue;
+               }
+               /*
+               for (i = 0; i < num_arg; i ++) {
+                  if (strcmp(find_ast_node(en->args[i].id)->token,node->token) == 0) {
+                     return 0;
+                  }
+               }
+               */
+               if (strcmp(find_ast_node(en->args[0].id)->token,node->token) == 0) {
                   return 0;
                }
             }
          }
+         old_tmp = tmp;
          tmp = tmp->parent;
       }
       printf("Error: Variable %s not declared\n",node->token);
@@ -354,7 +363,7 @@ int fill_map(struct ast *node) {
          a_tmp = node->parent;
          bool match = false;
          // var declare in let
-         printf("%s",node->token);
+         //printf("%s",node->token);
          if (!strcmp(a_tmp->token, "let")) {
             st_tmp = st_find_by_id(a_tmp->id);
             if (node->id == a_tmp->child->id->id) {
