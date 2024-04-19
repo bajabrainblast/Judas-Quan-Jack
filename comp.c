@@ -53,6 +53,7 @@ int main (int argc, char **argv) {
   }
   visit_ast(cfg_construct);
   // cfg_print();
+  cfg_dot("unopt_cfg");
   int changes = 1;
   while (changes){
     changes = 0;
@@ -61,6 +62,6 @@ int main (int argc, char **argv) {
     duplicate_branch_elimination(&changes);
     printf("%d changes\n", changes);
   }
-  cfg_dot();
+  cfg_dot("cfg");
   return cleanup(0);
 }

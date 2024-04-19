@@ -551,19 +551,27 @@ void add_nodes(FILE *fp, struct bblk* cblk) {
    }
 }
 
-void cfg_dot() {
-    struct bblk *blk;
-    struct bblk_child *chblk;
+void reset_nodes(struct bblk* cblk) {
+   struct bblk_child *cchild; 
+   cblk->visited = false;
+   for (cchild = cblk->child; cchild; cchild = cchild->next) {
+      reset_nodes(cchild->id);
+   }
+}
+
+void cfg_dot(char *name) {
     struct funcs *func;
-    struct line *line;
+    struct bblk *blk;
+    struct bblk_child *cchild; 
     FILE *fp;
+    char string[50];
 
     /*
     possible issues:
     when theres more than one line in the func head
     */
-
-    fp = fopen("cfg.dot", "w");
+    sprintf(string, "%s.dot", name);
+    fp = fopen(string, "w");
     fprintf(fp, "digraph print {\n ");
     
     // add all nodes and links to dot file
@@ -573,7 +581,15 @@ void cfg_dot() {
     }
     fprintf(fp, "}\n ");
     fclose(fp);
-    system("dot -Tpdf cfg.dot -o cfg.pdf");
+    sprintf(string, "dot -Tpdf %s.dot -o %s.pdf", name, name);
+    system(string);
+
+    // set all visited to 0 for possible second print
+    for (func=&cfgs; func; func=func->next) {
+       if (func->func)
+          reset_nodes(func->func);
+    }
+
     return;
 }
 
@@ -617,7 +633,43 @@ void merge_blocks(int *changes){
    }
 }
 
-void eliminate_unreachable_code(int *changes){
+void actual_elim(struct bblk *blk, struct line *line, int *changes) {
+   struct bblk_parent *pblk;
+   for (pblk=blk->parent; pblk; pblk=pblk->next) {
+      printf("\t%s\n", pblk->id->lines->text);
+   }
+}
+
+void elim(struct bblk *blk, int *changes) {
+   struct line *l;
+   struct bblk_child *child = blk->child;
+   if (blk->visited)
+      return;
+   blk->visited = true;
+   for (l = blk->lines; l; l=l->next) {
+      if (!strncmp(l->text, "IF", 2)) {
+         printf("%s\n", l->text);
+         actual_elim(blk, l, changes);
+      }
+   }
+   for (child = blk->child; child; child = child->next){
+      elim(child->id, changes);
+   }
+}
+
+void eliminate_unreachable_code(int *changes) {
+   struct funcs *func;
+   struct bblk_child *child;
+   struct line *l;
+
+   for (func = &cfgs; func; func = func->next)
+      reset_nodes(func->func);
+   for (func = &cfgs; func; func = func->next){
+      elim(func->func->child->id, changes);
+   }
+   for (func = &cfgs; func; func = func->next)
+      reset_nodes(func->func);
+
    return;
 }
 
