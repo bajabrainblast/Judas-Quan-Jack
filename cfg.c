@@ -552,9 +552,6 @@ void add_nodes(FILE *fp, struct bblk* cblk) {
 }
 
 void reset_nodes(struct bblk* cblk) {
-   if (!cblk->visited) {
-      return;
-   }
    struct bblk_child *cchild; 
    cblk->visited = false;
    for (cchild = cblk->child; cchild; cchild = cchild->next) {
@@ -641,36 +638,106 @@ void merge_blocks(int *changes){
    }
 }
 
-void actual_elim(struct bblk *blk, struct line *line, int *changes) {
-   struct bblk_parent *pblk, *p_pblk;
-   struct line *above = blk->parent->id->parent->id->lines;
-   char reg1[10], reg2[10], *tok, *tmp;
-   strcpy(tmp, line->text);
+// type = 0 means ifcond was set to false
+void actual_elim(struct bblk *blk, struct line *if_line, int type) {
+   // if ifcond was set to true, replace if_line text with then statement
+   // ifcond was set to false, replace if_line text with else statement
+   int i;
+   char newstr[50] = "", *tmp, *tok;
+   tmp = malloc(strlen(if_line->text) + 1);
+   strcpy(tmp, if_line->text);
    tok = strtok(tmp, " ");
-   tok = strtok(NULL, " ");
-   strcpy(reg1, tok);
 
-   strcpy(tmp, above->text);
-   tok = strtok(tmp, " ");
-   strcpy(reg2, tok);
-   printf("\treg1 %s reg2 %s\n", reg1, reg2);
-   printf("\t%s\n", above->text);
+   // get the then
+   if (type) {
+      while(strcmp(tok, "then") != 0)
+         tok = strtok(NULL, " ");
+      // when tok = then, grab everything until the else
+      tok = strtok(NULL, " ");
+      while(strcmp(tok, "else") != 0) {
+         strcat(newstr, tok);
+         strcat(newstr, " ");
+         tok = strtok(NULL, " ");
+      }
+      // remove the comma
+      for (i=49; i>=0; i--) 
+         if (newstr[i] == ',') {
+            newstr[i] = '\0';
+            break;
+         }
+      printf("%s\n", newstr);
+   }
+   // get the else
+   else {
+      while(strcmp(tok, "else") != 0)
+         tok = strtok(NULL, " ");
+      tok = strtok(NULL, " ");
+      while(tok) {
+         strcat(newstr, tok);
+         strcat(newstr, " ");
+         tok = strtok(NULL, " ");
+      }
+      printf("%s\n", newstr);
+   }
+
+   // replace old if with new str
+   strcpy(if_line->text, newstr);
+   free(tmp);
 }
 
-void elim(struct bblk *blk, int *changes) {
-   struct line *l_if, *l_set, *l;
+void find_cond_consts(struct bblk *blk, struct line *if_line, struct bblk *gparent, int *changes) {
+   struct line *l;
+   char ifcond[10], var[10], *tmp, *tok;
+
+   // grab the if condition
+   tmp = malloc(strlen(if_line->text) + 1);
+   strcpy(tmp, if_line->text);
+   tok = strtok(tmp, " ");
+   tok = strtok(NULL, " ");
+   strncpy(ifcond, tok, 10);
+   free(tmp);
+
+   // for each line in the grandparent, grab the first token (the register)
+   // and test if its the same as ifcond
+   for (l=gparent->lines; l; l=l->next) {
+      tmp = malloc(strlen(l->text) + 1);
+      strcpy(tmp, l->text);
+      tok = strtok(tmp, " ");
+      strncpy(var, tok, 10);
+
+      // if they're the same reg, then test to see if token after next is "true" or "false"
+      if (!strcmp(ifcond, tok)) {
+         tok = strtok(NULL, " ");
+         tok = strtok(NULL, " ");
+         if (!strcmp(tok, "true")) {
+            //printf("%s was set to TRUE!\n", ifcond);
+            actual_elim(blk, if_line, 1);
+         }
+         else if (!strcmp(tok, "false")) {
+            //printf("%s was set to FALSE!\n", ifcond);
+            actual_elim(blk, if_line, 0);
+         }
+         break;
+      }
+
+      free(tmp);
+   }
+}
+
+void find_ifs(struct bblk *blk, int *changes) {
+   struct line *l_if, *l_set, *l, *l2;
    struct bblk_child *child = blk->child;
    if (blk->visited)
       return;
    blk->visited = true;
    for (l=blk->lines; l; l=l->next) {
       if (!strncmp(l->text, "IF", 2)) {
-         printf("%s\n", l->text);
-         actual_elim(blk, l, changes);
+         //printf("%s\n", l->text);
+         find_cond_consts(blk, l, blk->parent->id->parent->id, changes);
       }
    }
    for (child = blk->child; child; child = child->next){
-      elim(child->id, changes);
+      find_ifs(child->id, changes);
    }
 }
 
@@ -683,8 +750,8 @@ void eliminate_unreachable_code(int *changes) {
       reset_nodes(func->func);
 
    for (func = &cfgs; func; func = func->next){
-      printf("%s-----\n", func->func->lines->text);
-      elim(func->func->child->id, changes);
+      //printf("%s-----\n", func->func->lines->text);
+      find_ifs(func->func->child->id, changes);
    }
 
    for (func = &cfgs; func; func = func->next)
