@@ -59,7 +59,7 @@ int main (int argc, char **argv) {
     merge_blocks(&changes);
     eliminate_unreachable_code(&changes);
     duplicate_branch_elimination(&changes);
-    printf("%d changes\n", changes);
+    changes ? printf("%d changes\n", changes) : printf("Optimizations Done\n");
   }
   cfg_dot();
   return cleanup(0);
