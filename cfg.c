@@ -551,19 +551,30 @@ void add_nodes(FILE *fp, struct bblk* cblk) {
    }
 }
 
-void cfg_dot() {
-    struct bblk *blk;
-    struct bblk_child *chblk;
+void reset_nodes(struct bblk* cblk) {
+   if (!cblk->visited) {
+      return;
+   }
+   struct bblk_child *cchild; 
+   cblk->visited = false;
+   for (cchild = cblk->child; cchild; cchild = cchild->next) {
+      reset_nodes(cchild->id);
+   }
+}
+
+void cfg_dot(char *name) {
     struct funcs *func;
-    struct line *line;
+    struct bblk *blk;
+    struct bblk_child *cchild; 
     FILE *fp;
+    char string[50];
 
     /*
     possible issues:
     when theres more than one line in the func head
     */
-
-    fp = fopen("cfg.dot", "w");
+    sprintf(string, "%s.dot", name);
+    fp = fopen(string, "w");
     fprintf(fp, "digraph print {\n ");
     
     // add all nodes and links to dot file
@@ -573,7 +584,15 @@ void cfg_dot() {
     }
     fprintf(fp, "}\n ");
     fclose(fp);
-    system("dot -Tpdf cfg.dot -o cfg.pdf");
+    sprintf(string, "dot -Tpdf %s.dot -o %s.pdf", name, name);
+    system(string);
+
+    // set all visited to 0 for possible second print
+    for (func=&cfgs; func; func=func->next) {
+       if (func->func)
+          reset_nodes(func->func);
+    }
+
     return;
 }
 
