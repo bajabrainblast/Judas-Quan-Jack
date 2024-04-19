@@ -61,6 +61,8 @@ int main (int argc, char **argv) {
   }
   visit_ast(cfg_construct);
   cfg_print();
-  cfg_dot();
+  cfg_dot("unopt_cfg");
+  // do optimizations
+  cfg_dot("cfg");
   return cleanup(0);
 }
