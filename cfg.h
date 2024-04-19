@@ -1,5 +1,6 @@
 #ifndef CFG_H
 #define CFG_H
+#define MAX_LINE_NUM 255
 #define MAX_LINE_SIZE 255
 #define MAX_REG_LEN 5
 #include <stdlib.h>
@@ -56,10 +57,15 @@ struct bblk *create_bblk(struct ast *node, struct line *line);
 struct funcs *create_func(struct bblk *blk);
 void insert_blk(struct bblk *node);
 void add_function(struct funcs *func);
+void append_line(struct bblk *blk, struct line *line);
 void cfg_print();
 void cfg_destroy();
 int cfg(struct ast *node);
 int cfg_construct(struct ast *node);
 void cfg_dot();
+
+void merge_blocks(int *changes);
+void eliminate_unreachable_code(int *changes);
+void duplicate_branch_elimination(int *changes);
 
 #endif

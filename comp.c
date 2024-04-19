@@ -33,11 +33,6 @@ int main (int argc, char **argv) {
     if (visit_ast(duplicate_var_declare)) return cleanup(6);
     if (visit_ast(duplicate_arg_func)) return cleanup(7);
     visit_ast(init_map);
-    
-    //tm_print();
-    // pass over as many times as needed until zero unknowns remain
-    //st_print();  // should not print if any failures occured
-    
     while (true) {
       visit_ast(fill_map);
       printf("passed\n");
@@ -46,9 +41,6 @@ int main (int argc, char **argv) {
       }
     }
     print_ast();
-    //st_print();
-    //tm_print();
-
     if (visit_ast(check_ifs)) return cleanup(14);
     if (visit_ast(check_function_returns)) return cleanup(8);
     if (visit_ast(well_formed_aop)) return cleanup(9);
@@ -60,7 +52,15 @@ int main (int argc, char **argv) {
     //if (visit_ast(check_lets)) return cleanup(15);
   }
   visit_ast(cfg_construct);
-  cfg_print();
+  // cfg_print();
+  int changes = 1;
+  while (changes){
+    changes = 0;
+    merge_blocks(&changes);
+    eliminate_unreachable_code(&changes);
+    duplicate_branch_elimination(&changes);
+    printf("%d changes\n", changes);
+  }
   cfg_dot();
   return cleanup(0);
 }

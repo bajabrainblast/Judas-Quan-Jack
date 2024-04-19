@@ -74,6 +74,20 @@ void add_function(struct funcs *func){
     cfunc->next = func;
 }
 
+void append_line(struct bblk *blk, struct line *line){
+   struct line *l;
+   for (l = blk->lines; l->next; l = l->next);
+   l->next = line;
+}
+
+void remove_line(struct bblk *blk, struct line *line){
+   if (line == blk->lines){
+      blk->lines = line->next;
+   }
+   // if (line)
+};
+
+
 void cfg_print(){
     if (!cfgs.func){
         printf("No CFG for any function.\n");
@@ -523,7 +537,14 @@ void add_nodes(FILE *fp, struct bblk* cblk) {
    }
    struct bblk_child *cchild; 
    cblk->visited = true;
-   fprintf(fp, "%d [label=\"%i: %s\", fontname=\"monospace\", style=filled, fillcolor=mintcream];\n ", cblk->node->id, cblk->node->id, cblk->lines->text);
+   char text[MAX_LINE_SIZE * MAX_LINE_NUM] = "";
+   strcat(text, cblk->lines->text);
+   struct line *line;
+   for (line = cblk->lines->next; line; line = line->next){
+      strcat(text, "\n");
+      strcat(text, line->text);
+   }
+   fprintf(fp, "%d [label=\"%i: %s\", fontname=\"monospace\", style=filled, fillcolor=mintcream];\n ", cblk->node->id, cblk->node->id, text);
    for (cchild = cblk->child; cchild; cchild = cchild->next) {
       fprintf(fp, "%d->%d\n ", cblk->node->id, cchild->id->node->id);
       add_nodes(fp, cchild->id);
@@ -554,4 +575,52 @@ void cfg_dot() {
     fclose(fp);
     system("dot -Tpdf cfg.dot -o cfg.pdf");
     return;
+}
+
+void merge(struct bblk *parent, struct bblk *child){
+   struct line *line;
+   parent->child = child->child;
+   parent->next = child->next;
+   for (line = child->lines; line; line = line->next) append_line(parent, line);
+   child->child = NULL;
+   child->parent = NULL;
+   child->lines = NULL;
+   child->next = NULL;
+   child->node = NULL;
+   free(child);
+}
+
+void merge_block(struct bblk *blk, int *changes){
+   struct line *l;
+   // for (l = blk->lines; l; l = l->next){
+   //    printf("%s\n", l->text);
+   // }
+   struct bblk_child *child = blk->child;
+   if (blk->child && !blk->child->next && !child->id->parent->next){
+      // printf("Yay!\n");
+      merge(blk, blk->child->id);
+      (*changes)++;
+      merge_block(blk, changes);
+   }
+   for (child = blk->child; child; child = child->next){
+      merge_block(child->id, changes);
+   }
+}
+
+void merge_blocks(int *changes){
+   struct funcs *func;
+   struct bblk *blk;
+   struct line *l;
+   for (func = &cfgs; func; func = func->next){
+      merge_block(func->func->child->id, changes);
+      // printf("\n");
+   }
+}
+
+void eliminate_unreachable_code(int *changes){
+   return;
+}
+
+void duplicate_branch_elimination(int *changes){
+   return;   
 }

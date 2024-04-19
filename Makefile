@@ -30,4 +30,4 @@ cfg.o: cfg.c cfg.h
 	$(CC) -c -g cfg.c
 
 clean: 
-	rm -f comp lex.yy.c y.tab.c y.tab.h *.o
+	rm -f comp lex.yy.c y.tab.c y.tab.h *.o ast.dot ast.pdf cfg.dot cfg.pdf
