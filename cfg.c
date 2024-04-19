@@ -634,19 +634,28 @@ void merge_blocks(int *changes){
 }
 
 void actual_elim(struct bblk *blk, struct line *line, int *changes) {
-   struct bblk_parent *pblk;
-   for (pblk=blk->parent; pblk; pblk=pblk->next) {
-      printf("\t%s\n", pblk->id->lines->text);
-   }
+   struct bblk_parent *pblk, *p_pblk;
+   struct line *above = blk->parent->id->parent->id->lines;
+   char reg1[10], reg2[10], *tok, *tmp;
+   strcpy(tmp, line->text);
+   tok = strtok(tmp, " ");
+   tok = strtok(NULL, " ");
+   strcpy(reg1, tok);
+
+   strcpy(tmp, above->text);
+   tok = strtok(tmp, " ");
+   strcpy(reg2, tok);
+   printf("\treg1 %s reg2 %s\n", reg1, reg2);
+   printf("\t%s\n", above->text);
 }
 
 void elim(struct bblk *blk, int *changes) {
-   struct line *l;
+   struct line *l_if, *l_set, *l;
    struct bblk_child *child = blk->child;
    if (blk->visited)
       return;
    blk->visited = true;
-   for (l = blk->lines; l; l=l->next) {
+   for (l=blk->lines; l; l=l->next) {
       if (!strncmp(l->text, "IF", 2)) {
          printf("%s\n", l->text);
          actual_elim(blk, l, changes);
@@ -664,9 +673,12 @@ void eliminate_unreachable_code(int *changes) {
 
    for (func = &cfgs; func; func = func->next)
       reset_nodes(func->func);
+
    for (func = &cfgs; func; func = func->next){
+      printf("%s-----\n", func->func->lines->text);
       elim(func->func->child->id, changes);
    }
+
    for (func = &cfgs; func; func = func->next)
       reset_nodes(func->func);
 

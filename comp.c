@@ -57,7 +57,7 @@ int main (int argc, char **argv) {
   int changes = 1;
   while (changes){
     changes = 0;
-    merge_blocks(&changes);
+    //merge_blocks(&changes);
     eliminate_unreachable_code(&changes);
     duplicate_branch_elimination(&changes);
     printf("%d changes\n", changes);
