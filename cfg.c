@@ -552,6 +552,9 @@ void add_nodes(FILE *fp, struct bblk* cblk) {
 }
 
 void reset_nodes(struct bblk* cblk) {
+   if (!cblk->visited) {
+      return;
+   }
    struct bblk_child *cchild; 
    cblk->visited = false;
    for (cchild = cblk->child; cchild; cchild = cchild->next) {
@@ -594,9 +597,14 @@ void cfg_dot(char *name) {
 }
 
 void merge(struct bblk *parent, struct bblk *child){
+   struct bblk_child *cchild;
    struct line *line;
    parent->child = child->child;
    parent->next = child->next;
+   for (cchild = child->child; cchild; cchild = cchild->next){ 
+      remove_parent(cchild->id, child);
+      add_parent(cchild->id, parent);
+   }
    for (line = child->lines; line; line = line->next) append_line(parent, line);
    child->child = NULL;
    child->parent = NULL;

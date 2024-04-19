@@ -1,14 +1,4 @@
-(define-fun f1 (i int) bool (= i (+ 2 3)))
-(define-fun f2 (i bool) (j int) int
-	(if
-		(if (f1 j) (not i) (get-bool))
-		(if (get-bool) (- j 5) 0)
-		0))
-(define-fun f3 int 
-    (if true
-        (f2 true -10)
-        (f2 false 10)
-    )
-)
-(print (let (x (* 2 (f2 true 1))) (* x 2)))
-
+(define-fun const bool (= (let (c 1) c) 1))
+(define-fun test (a int) (b int) bool
+(if true (> 1 (+ a b)) (const)))
+(print (if (test 1 2) (if (get-bool) 1 1) 5))
