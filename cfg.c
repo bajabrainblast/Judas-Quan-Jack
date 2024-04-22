@@ -589,10 +589,16 @@ void add_nodes(FILE *fp, struct bblk* cblk) {
 }
 
 void reset_nodes(struct bblk* cblk) {
+   /*
    struct bblk_child *cchild; 
    cblk->visited = false;
    for (cchild = cblk->child; cchild; cchild = cchild->next) {
       reset_nodes(cchild->id);
+   }
+   */
+   struct bblk *tblk;
+   for (tblk = cblk; tblk; tblk = tblk->next) {
+      tblk->visited = false;
    }
 }
 
@@ -683,16 +689,23 @@ void merge_blocks(int *changes){
 
 // remove [start, finish)
 void remove_bblk_between(struct bblk *start, struct bblk *finish, struct bblk *prev) {
-   struct bblk_child *ch, *ch2;
-   struct bblk_parent *pr;
+   struct bblk_child *ch, *ch2, *cchild;
+   struct bblk_parent *pr, *cparent;
    if (start == finish)
       return;
    for (ch=start->child; ch; ch=ch->next) 
       remove_bblk_between(ch->id, finish, start);
    printf("\tremoving %s\n", start->lines->text);
    // so what i really want is to remove the link from the current block to its children. 
+   for (cparent = start->parent; cparent; cparent = cparent->next) {
+      remove_child(cparent->id,start);
+   }
+   for (cchild = start->child; cchild; cchild = cchild->next) {
+      remove_parent(cchild->id,start);
+   }
+   remove_bblk(cfunc,start);
    ch = start->child;
-   start->child = NULL;
+   //start->child = NULL;
 }
 
 // type = 0 means ifcond was set to false
@@ -743,6 +756,7 @@ void actual_elim(struct bblk *blk, struct line *if_line, struct bblk *gparent, i
    // remove all blocks between rm_branch and blk
    printf("removing all between %s\n\t and %s\n", rm_branch->lines->text, if_line->text);
    remove_bblk_between(rm_branch, blk, gparent);
+   /*
    if (type) {
       gparent->child = NULL;
    }
@@ -750,6 +764,7 @@ void actual_elim(struct bblk *blk, struct line *if_line, struct bblk *gparent, i
       gparent->child = gparent->child->next;
       gparent->child->next = NULL;
    }
+   */
 
    // replace old if with new str
    strcpy(if_line->text, newstr);
@@ -839,6 +854,7 @@ void eliminate_unreachable_code(int *changes) {
 
    for (func = &cfgs; func; func = func->next) {
       //printf("%s-----\n", func->func->lines->text);
+      cfunc = func;
       find_ifs(func->func->child->id, changes, func);
    }
 
