@@ -2,6 +2,7 @@
 struct bblk *top;
 struct bblk *end;
 struct funcs cfgs;
+struct funcs *cfunc;
 struct reg_map *rmap;
 int counter = 1;
 
@@ -76,8 +77,9 @@ void add_function(struct funcs *func){
 
 void append_line(struct bblk *blk, struct line *line){
    struct line *l;
+   struct line *new_line = create_line(line->text);
    for (l = blk->lines; l->next; l = l->next);
-   l->next = line;
+   l->next = new_line;
 }
 
 void remove_line(struct bblk *blk, struct line *line){
@@ -105,6 +107,36 @@ void cfg_print(){
     }
 }
 
+void free_bblk(struct bblk *tblk) {
+   struct line *cline;
+   struct bblk_parent *cparent;
+   struct bblk_child *cchild;
+   cparent = tblk->parent;
+   while (cparent) {
+      struct bblk_parent *tparent = cparent;
+      cparent = cparent->next;
+      free(tparent);
+   }
+   cchild = tblk->child;
+   while (cchild) {
+      struct bblk_child *tchild = cchild;
+      cchild = cchild->next;
+      free(tchild);
+   }
+   for (cline = tblk->lines; cline; cline = cline->next) {
+      free(cline->text);
+   }
+   free(tblk);
+}
+
+void remove_bblk(struct funcs *func, struct bblk *rblk) {
+   struct bblk *cblk;
+   for (cblk = func->func; cblk->next != rblk; cblk = cblk->next) {
+   }
+   cblk->next = cblk->next->next;
+   free_bblk(rblk);
+}
+
 void cfg_destroy() {
    struct bblk_child *cchild;
    struct bblk_parent *cparent;
@@ -115,24 +147,11 @@ void cfg_destroy() {
          while (cblk) {
             struct bblk *tblk = cblk;
             cblk = cblk->next;
-            cparent = tblk->parent;
-            while (cparent) {
-               struct bblk_parent *tparent = cparent;
-               cparent = cparent->next;
-               free(tparent);
-            }
-            cchild = tblk->child;
-            while (cchild) {
-               struct bblk_child *tchild = cchild;
-               cchild = cchild->next;
-               free(cchild);
-            }
-            free(tblk->lines->text);
-            free(tblk);
+            free_bblk(tblk);
          }
       }
    }
-};
+}
 
 char *get_vreg(struct ast *node, char reg[]){
     sprintf(reg, "v%d", node->id);
@@ -268,6 +287,23 @@ void remove_parent(struct bblk *cblk, struct bblk *tblk) {
    }
 }
 
+void remove_child(struct bblk *cblk, struct bblk *tblk) {
+   struct bblk_child *cchild = cblk->child;
+   if (cchild->id == tblk) {
+      cblk->child = cchild->next;
+      free(cchild);
+   }
+   else {
+      while (cchild->next) {
+         if (cchild->next->id == tblk) {
+            struct bblk_child *tchild = cchild->next;
+            cchild->next = cchild->next->next;
+            free(tchild);
+         }
+      }
+   }
+}
+
 void populate_child() {
    struct bblk *cblk = top;
    while (cblk) {
@@ -313,6 +349,7 @@ void insert_bblk_up(struct bblk *cblk, struct bblk *tblk) {
    add_parent(cblk,tblk);
    end->next = tblk;
    end = tblk;
+   end->next = NULL;
 }
 
 int cfg_construct(struct ast *node) {
@@ -599,19 +636,24 @@ void cfg_dot(char *name) {
 void merge(struct bblk *parent, struct bblk *child){
    struct bblk_child *cchild;
    struct line *line;
-   parent->child = child->child;
-   parent->next = child->next;
+   //parent->child = child->child;
+   //parent->next = child->next;
    for (cchild = child->child; cchild; cchild = cchild->next){ 
       remove_parent(cchild->id, child);
       add_parent(cchild->id, parent);
+      add_child(parent,cchild->id);
    }
    for (line = child->lines; line; line = line->next) append_line(parent, line);
+   remove_child(parent,child);
+   remove_bblk(cfunc,child);
+   /*
    child->child = NULL;
    child->parent = NULL;
    child->lines = NULL;
    child->next = NULL;
    child->node = NULL;
    free(child);
+   */
 }
 
 void merge_block(struct bblk *blk, int *changes){
@@ -636,6 +678,7 @@ void merge_blocks(int *changes){
    struct bblk *blk;
    struct line *l;
    for (func = &cfgs; func; func = func->next){
+      cfunc = func;
       merge_block(func->func->child->id, changes);
       // printf("\n");
    }
@@ -645,6 +688,98 @@ void eliminate_unreachable_code(int *changes){
    return;
 }
 
+
+
 void duplicate_branch_elimination(int *changes){
+   struct funcs *func;
+   struct bblk *cblk;
+   struct line *cline;
+   for (func = &cfgs; func; func = func->next) {
+      cfunc = func;
+      for (cblk = func->func; cblk; cblk = cblk->next) {
+         //printf("cblk lines %s",cblk->lines->text);
+         if (cblk->lines->text[0] == 'I' && cblk->lines->text[1] == 'F') {
+            struct bblk *b1 = cblk->parent->id;
+            struct bblk *b2 = cblk->parent->next->id;
+            struct bblk *if_blk = b1->parent->id;
+            struct line *line1;
+            struct line *line2;
+            char text_cpy[50];
+            char dst_reg[6];
+            char reg1[6];
+            char reg2[6];
+            char val1[6];
+            char val2[6];
+            char tmp[30];
+            char tmp1[30];
+            char tmp2[30];
+            char *split;
+            strcpy(text_cpy,cblk->lines->text);
+            split = strchr(text_cpy,'n');
+            split += 2;
+            strcpy(tmp,split);
+            strcpy(tmp1,split);
+            split = strchr(tmp1,':');
+            *split = '\0';
+            strcpy(dst_reg,tmp1);
+            //printf("%s\n",dst_reg);
+            strcpy(tmp1,tmp);
+            split = strchr(tmp1,'=');
+            split += 2;
+            strcpy(tmp1,split);
+            strcpy(tmp2,tmp1);
+            split = strchr(tmp1,',');
+            *split = '\0';
+            strcpy(reg1,tmp1);
+            //printf("%s\n",reg1);
+            split = strchr(tmp2,'=');
+            split += 2;
+            strcpy(reg2,split);
+            //printf("%s\n",reg2);
+            for (line1 = b1->lines; line1; line1 = line1->next) {
+               if (strstr(line1->text,reg1) != NULL || strstr(line1->text,reg2) != NULL) {
+                  //printf("%s\n",line1->text);
+                  break;
+               }
+               if (strstr(line2->text,reg1) != NULL || strstr(line2->text,reg2) != NULL) {
+                  //printf("%s\n",line2->text);
+                  break;
+               }
+            }
+            for (line2 = b2->lines; line2; line2 = line2->next) {
+               if (strstr(line2->text,reg1) != NULL || strstr(line2->text,reg2) != NULL) {
+                  //printf("%s\n",line2->text);
+                  break;
+               }
+               if (strstr(line2->text,reg1) != NULL || strstr(line2->text,reg2) != NULL) {
+                  //printf("%s\n",line2->text);
+                  break;
+               }
+            }
+            split = strchr(line1->text,'=');
+            split += 2;
+            strcpy(val1,split);
+            //printf("%s\n",val1);
+            split = strchr(line2->text,'=');
+            split += 2;
+            strcpy(val2,split);
+            //printf("%s\n",val2);
+            if (!strcmp(val1,val2)) {
+               *changes = 1;
+               remove_child(if_blk,b1);
+               remove_child(if_blk,b2);
+               add_child(if_blk,cblk);
+               remove_parent(cblk,b1);
+               remove_parent(cblk,b2);
+               add_parent(cblk,if_blk);
+
+               remove_bblk(cfunc,b1);
+               remove_bblk(cfunc,b2);
+               sprintf(cblk->lines->text,"%s := %s",dst_reg,val1);
+            }
+         }
+
+      }
+   }
    return;   
 }
