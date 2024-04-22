@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# Directory containing the test files
+directory="./tests/success/"
+
+# Loop through each file in the directory
+for file in "$directory"*
+do
+    # Print the name of the file
+    echo "=== $file ==="
+    
+    # Execute the command './comp' with the current file as input
+    ./comp < "$file"
+done

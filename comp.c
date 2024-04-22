@@ -13,6 +13,7 @@ int cleanup(int error){
   free_ast();
   st_free();
   tm_free();
+  cfg_destroy();
   return error;
 }
 
@@ -48,8 +49,11 @@ int main (int argc, char **argv) {
     if (visit_ast(well_formed_bop)) return cleanup(11);
     if (visit_ast(well_formed_not)) return cleanup(14);
     if (visit_ast(if_first_arg)) return cleanup(12);
-    if (visit_ast(func_call_args_type)) return cleanup(13);
+    if (visit_ast(func_call_args_type)) return cleanup(14);
     //if (visit_ast(check_lets)) return cleanup(15);
+  }
+  else {
+     return 15;
   }
   visit_ast(cfg_construct);
   cfg_dot("unopt_cfg");
