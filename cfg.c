@@ -719,6 +719,23 @@ void remove_bblk_between(struct bblk *start, struct bblk *finish, struct bblk *p
    //start->child = NULL;
 }
 
+int branch_has_node(struct bblk *blk, struct bblk *end, int target){
+   printf("Child: %d - %d\n", blk->node->id, target);
+   // for (struct bblk_child *cc = blk->child; cc; cc = cc->next){
+   //    if ()
+   // }
+   if (blk == end) return 0;
+   if (blk->node->id == target){ return 1; }
+   char reg[MAX_REG_LEN] = "\0";
+   sprintf(reg, "v%d", target);
+
+   for (struct line *line = blk->lines; line; line = line->next){
+      if (!strncmp(line->text, reg, 3)) return 1;
+   }
+   for (struct bblk_child *cchild = blk->child; cchild; cchild = cchild->next) if (branch_has_node(cchild->id, end, target)) return 1;
+   return 0;
+}
+
 // type = 0 means ifcond was set to false
 void actual_elim(struct bblk *blk, struct line *if_line, struct bblk *gparent, int type) {
    // if ifcond was set to true, replace if_line text with then statement
@@ -732,22 +749,26 @@ void actual_elim(struct bblk *blk, struct line *if_line, struct bblk *gparent, i
    int vd, vi, vt, ve;
    if (type) {
       sscanf(if_line->text, "IF v%d = true, then v%d := v%d, else v%d := v%d", &vi, &vd, &vt, &vd, &ve);
+      sprintf(newstr,"v%d := v%d",vd,vt);
       for (struct bblk_child *cchild = gparent->child; cchild; cchild = cchild->next){
-         if (cchild->id->node->id == ve){
+         if (branch_has_node(cchild->id, blk, ve)){
             rm_branch = cchild->id;
             break;
          }
       }
    } else {
-      sscanf(if_line->text, "IF v%d = false, then v%d := v%d, else v%d := v%d", &vi, &vd, &vt, &vd, &ve);
+      //sscanf(if_line->text, "IF v%d = false, then v%d := v%d, else v%d := v%d", &vi, &vd, &vt, &vd, &ve);
+      sscanf(if_line->text, "IF v%d = true, then v%d := v%d, else v%d := v%d", &vi, &vd, &vt, &vd, &ve);
+      sprintf(newstr,"v%d := v%d",vd,ve);
       for (struct bblk_child *cchild = gparent->child; cchild; cchild = cchild->next){
-         if (cchild->id->node->id == vt){
+         if (branch_has_node(cchild->id, blk, vt)){
             rm_branch = cchild->id;
             break;
          }
       }
    }
-   // printf("Dst: %d\nIf: %d\nThen: %d\nElse: %d\n", vd, vi, vt, ve);
+   printf("%s\n", if_line->text);
+   printf("Dst: %d\nIf: %d\nThen: %d\nElse: %d\n", vd, vi, vt, ve);
    // remove all blocks between rm_branch and blk
    // printf("removing all between %s\n\t and %s\n", rm_branch->lines->text, if_line->text);
    remove_bblk_between(rm_branch, blk, gparent);
@@ -772,29 +793,56 @@ void find_cond_consts(struct bblk *blk, struct line *if_line, struct bblk *gpare
    // and test if its the same as ifcond
    for (l=gparent->lines; l; l=l->next) {
       // printf("for\n");
-      tmp = malloc(strlen(l->text) + 1);
-      strcpy(tmp, l->text);
-      tok = strtok(tmp, " ");
-      strncpy(var, tok, 10);
-
-      // if they're the same reg, then test to see if token after next is "true" or "false"
-      if (!strcmp(ifcond, tok)) {
-         tok = strtok(NULL, " ");
-         tok = strtok(NULL, " ");
-         if (!strcmp(tok, "true")) {
-            // printf("%s was set to TRUE!\n", ifcond);
+      if (strstr(l->text,ifcond)) {
+         if (strstr(l->text, "true")){
+            printf("%s was set to TRUE!\n", ifcond);
             actual_elim(blk, if_line, gparent, 1);
             (*changes)++;
-         }
-         else if (!strcmp(tok, "false")) {
-            // printf("%s was set to FALSE!\n", ifcond);
+         } else {
+            printf("%s was set to FALSE!\n", ifcond);
             actual_elim(blk, if_line, gparent, 0);
             (*changes)++;
          }
-         // printf("Finished\n");
-         break;
       }
+
+      /*
+      tmp = malloc(strlen(l->text) + 1);
+      strcpy(tmp, l->text);
+      // tok = strtok(tmp, " ");
+      // strncpy(var, tok, 10);
+      printf("TMP: %s\n", if_line->text);
+      char cond[MAX_LINE_SIZE] = "\0", overflow[MAX_LINE_SIZE] = "\0";
+      sscanf(if_line->text, "%[^,],%s", cond, overflow);
+      printf("Cond: %s\n", cond);
+      printf("Over: %s\n", overflow);
+      if (strstr(cond, "true")){
+         printf("%s was set to TRUE!\n", ifcond);
+         actual_elim(blk, if_line, gparent, 1);
+         (*changes)++;
+      } else {
+         printf("%s was set to FALSE!\n", ifcond);
+         actual_elim(blk, if_line, gparent, 0);
+         (*changes)++;
+      }
+      // if they're the same reg, then test to see if token after next is "true" or "false"
+      // if (!strcmp(ifcond, tok)) {
+      //    tok = strtok(NULL, " ");
+      //    tok = strtok(NULL, " ");
+      //    if (!strcmp(tok, "true")) {
+      //       printf("%s was set to TRUE!\n", ifcond);
+      //       actual_elim(blk, if_line, gparent, 1);
+      //       (*changes)++;
+      //    }
+      //    else if (!strcmp(tok, "false")) {
+      //       printf("%s was set to FALSE!\n", ifcond);
+      //       actual_elim(blk, if_line, gparent, 0);
+      //       (*changes)++;
+      //    }
+      //    // printf("Finished\n");
+      //    break;
+      // }
       free(tmp);
+      */
    }
 }
 
@@ -909,20 +957,24 @@ void duplicate_branch_elimination(int *changes){
                   //printf("%s\n",line1->text);
                   break;
                }
+               /*
                if (strstr(line2->text,reg1) != NULL || strstr(line2->text,reg2) != NULL) {
                   //printf("%s\n",line2->text);
                   break;
                }
+               */
             }
             for (line2 = b2->lines; line2; line2 = line2->next) {
                if (strstr(line2->text,reg1) != NULL || strstr(line2->text,reg2) != NULL) {
                   //printf("%s\n",line2->text);
                   break;
                }
+               /*
                if (strstr(line2->text,reg1) != NULL || strstr(line2->text,reg2) != NULL) {
                   //printf("%s\n",line2->text);
                   break;
                }
+               */
             }
             split = strchr(line1->text,'=');
             split += 2;
