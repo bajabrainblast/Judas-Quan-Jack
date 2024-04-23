@@ -940,20 +940,24 @@ void duplicate_branch_elimination(int *changes){
                   //printf("%s\n",line1->text);
                   break;
                }
+               /*
                if (strstr(line2->text,reg1) != NULL || strstr(line2->text,reg2) != NULL) {
                   //printf("%s\n",line2->text);
                   break;
                }
+               */
             }
             for (line2 = b2->lines; line2; line2 = line2->next) {
                if (strstr(line2->text,reg1) != NULL || strstr(line2->text,reg2) != NULL) {
                   //printf("%s\n",line2->text);
                   break;
                }
+               /*
                if (strstr(line2->text,reg1) != NULL || strstr(line2->text,reg2) != NULL) {
                   //printf("%s\n",line2->text);
                   break;
                }
+               */
             }
             split = strchr(line1->text,'=');
             split += 2;
