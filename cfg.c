@@ -721,9 +721,6 @@ void remove_bblk_between(struct bblk *start, struct bblk *finish, struct bblk *p
 
 int branch_has_node(struct bblk *blk, struct bblk *end, int target){
    printf("Child: %d - %d\n", blk->node->id, target);
-   // for (struct bblk_child *cc = blk->child; cc; cc = cc->next){
-   //    if ()
-   // }
    if (blk == end) return 0;
    if (blk->node->id == target){ return 1; }
    char reg[MAX_REG_LEN] = "\0";
@@ -737,77 +734,90 @@ int branch_has_node(struct bblk *blk, struct bblk *end, int target){
 }
 
 // type = 0 means ifcond was set to false
-void actual_elim(struct bblk *blk, struct line *if_line, struct bblk *gparent, int type) {
+void actual_elim(struct bblk *blk, struct line *if_line, struct bblk *gparent, int condition, int value) {
+   // int i;
+   // char newstr[50] = "", *tmp, *tok;
+   // tmp = malloc(strlen(if_line->text) + 1);
+   // strcpy(tmp, if_line->text);
+   // tok = strtok(tmp, " ");
    // if ifcond was set to true, replace if_line text with then statement
    // ifcond was set to false, replace if_line text with else statement
-   int i;
    struct bblk *rm_branch;
-   char newstr[50] = "", *tmp, *tok;
-   tmp = malloc(strlen(if_line->text) + 1);
-   strcpy(tmp, if_line->text);
-   tok = strtok(tmp, " ");
    int vd, vi, vt, ve;
-   if (type) {
+   
+   if (condition) {
       sscanf(if_line->text, "IF v%d = true, then v%d := v%d, else v%d := v%d", &vi, &vd, &vt, &vd, &ve);
-      for (struct bblk_child *cchild = gparent->child; cchild; cchild = cchild->next){
-         if (branch_has_node(cchild->id, blk, ve)){
-            rm_branch = cchild->id;
-            break;
-         }
-      }
    } else {
       sscanf(if_line->text, "IF v%d = false, then v%d := v%d, else v%d := v%d", &vi, &vd, &vt, &vd, &ve);
+   }
+   if (condition == value){
       for (struct bblk_child *cchild = gparent->child; cchild; cchild = cchild->next){
-         if (branch_has_node(cchild->id, blk, vt)){
-            rm_branch = cchild->id;
+         if (branch_has_node(cchild->id, blk, ve)){
+            remove_bblk_between(cchild->id, blk, gparent);
             break;
          }
       }
+      printf("v%d := v%d\n", vd, vt);
+      sprintf(if_line->text, "v%d := v%d", vd, vt);
+   } else {
+      for (struct bblk_child *cchild = gparent->child; cchild; cchild = cchild->next){
+         if (branch_has_node(cchild->id, blk, vt)){
+            remove_bblk_between(cchild->id, blk, gparent);
+            break;
+         }
+      }
+      printf("v%d := v%d\n", vd, ve);
+      sprintf(if_line->text, "v%d := v%d", vd, ve);
    }
    printf("%s\n", if_line->text);
    printf("Dst: %d\nIf: %d\nThen: %d\nElse: %d\n", vd, vi, vt, ve);
-   // remove all blocks between rm_branch and blk
-   // printf("removing all between %s\n\t and %s\n", rm_branch->lines->text, if_line->text);
-   remove_bblk_between(rm_branch, blk, gparent);
-   // replace old if with new str
-   strcpy(if_line->text, newstr);
-   free(tmp);
 }
 
 void find_cond_consts(struct bblk *blk, struct line *if_line, struct bblk *gparent, int *changes) {
    struct line *l;
    char ifcond[10], var[10], *tmp, *tok;
-
+   int condition = -1, value = -1; // If condition and value in register checked
    // grab the if condition
-   tmp = malloc(strlen(if_line->text) + 1);
-   strcpy(tmp, if_line->text);
-   tok = strtok(tmp, " ");
-   tok = strtok(NULL, " ");
-   strncpy(ifcond, tok, 10);
-   free(tmp);
-
-   // for each line in the grandparent, grab the first token (the register)
-   // and test if its the same as ifcond
+   printf("%s\n", blk->lines->text);
+   condition = strstr(blk->lines->text, "true") ? 1 : 0;
+   // Get bool value from gparent
+   // If no assignment to a bool value, then value = -1
    for (l=gparent->lines; l; l=l->next) {
-      // printf("for\n");
-      tmp = malloc(strlen(l->text) + 1);
-      strcpy(tmp, l->text);
+      if (strstr(l->text, "IF")) continue;
+      if (strstr(l->text, "true")){
+         printf("|%s|\n", l->text);
+         value = 1;
+      } else if (strstr(l->text, "false")){
+         printf("!%s!\n", l->text);
+         value = 0;
+      }
+   }
+   printf("%d:%d\n", condition, value);
+   // If no value or condition bools extracted, move on
+   if (condition == -1 || value == -1) return;
+   // Otherwise eliminate useless branch
+   actual_elim(blk, if_line, gparent, condition, condition == value);
+   (*changes)++;
+}
+      // tmp = malloc(strlen(l->text) + 1);
+      // strcpy(tmp, l->text);
       // tok = strtok(tmp, " ");
       // strncpy(var, tok, 10);
-      printf("TMP: %s\n", if_line->text);
-      char cond[MAX_LINE_SIZE] = "\0", overflow[MAX_LINE_SIZE] = "\0";
-      sscanf(if_line->text, "%[^,],%s", cond, overflow);
-      printf("Cond: %s\n", cond);
-      printf("Over: %s\n", overflow);
-      if (strstr(cond, "true")){
-         printf("%s was set to TRUE!\n", ifcond);
-         actual_elim(blk, if_line, gparent, 1);
-         (*changes)++;
-      } else {
-         printf("%s was set to FALSE!\n", ifcond);
-         actual_elim(blk, if_line, gparent, 0);
-         (*changes)++;
-      }
+      // printf("%s\n", tmp);
+      // printf("TMP: %s\n", if_line->text);
+      // char cond[MAX_LINE_SIZE] = "\0", overflow[MAX_LINE_SIZE] = "\0";
+      // sscanf(if_line->text, "%[^,],%s", cond, overflow);
+      // printf("Cond: %s\n", cond);
+      // printf("Over: %s\n", overflow);
+      // if (strstr(cond, "true")){
+      //    printf("%s was set to TRUE!\n", ifcond);
+      //    actual_elim(blk, if_line, gparent, 1);
+      //    (*changes)++;
+      // } else {
+      //    printf("%s was set to FALSE!\n", ifcond);
+      //    actual_elim(blk, if_line, gparent, 0);
+      //    (*changes)++;
+      // }
       // if they're the same reg, then test to see if token after next is "true" or "false"
       // if (!strcmp(ifcond, tok)) {
       //    tok = strtok(NULL, " ");
@@ -825,9 +835,9 @@ void find_cond_consts(struct bblk *blk, struct line *if_line, struct bblk *gpare
       //    // printf("Finished\n");
       //    break;
       // }
-      free(tmp);
-   }
-}
+      //free(tmp);
+   // }
+// }
 
 void find_ifs(struct bblk *blk, int *changes, struct funcs *froot) {
    struct line *l_if, *l_set, *l, *l2;
@@ -898,6 +908,7 @@ void duplicate_branch_elimination(int *changes){
       for (cblk = func->func; cblk; cblk = cblk->next) {
          //printf("cblk lines %s",cblk->lines->text);
          if (cblk->lines->text[0] == 'I' && cblk->lines->text[1] == 'F') {
+            if (!cblk->parent || !cblk->parent->next) continue;
             struct bblk *b1 = cblk->parent->id;
             struct bblk *b2 = cblk->parent->next->id;
             struct bblk *if_blk = b1->parent->id;
