@@ -294,6 +294,7 @@ void remove_parent(struct bblk *cblk, struct bblk *tblk) {
 
 void remove_child(struct bblk *cblk, struct bblk *tblk) {
    struct bblk_child *cchild = cblk->child;
+   bool removed = false;
    if (cchild->id == tblk) {
       cblk->child = cchild->next;
       free(cchild);
@@ -304,7 +305,12 @@ void remove_child(struct bblk *cblk, struct bblk *tblk) {
             struct bblk_child *tchild = cchild->next;
             cchild->next = cchild->next->next;
             free(tchild);
+            removed = true;
+            break;
          }
+      }
+      if (!removed) {
+         printf("remove child error\n");
       }
    }
 }
@@ -831,14 +837,21 @@ void find_ifs(struct bblk *blk, int *changes, struct funcs *froot) {
                // ensure has two children, otherwise already applied optimization
                if (tblk->child && tblk->child->next)
                   find_cond_consts(blk, l, tblk, changes);
+               if ((*changes) != 0) {
+                  return;
+               }
                break;
             }
          }
       }
    }
    for (child = blk->child; child; child = child->next){
-      if (child && child->id)
+      if (child && child->id) {
          find_ifs(child->id, changes, froot);
+         if ((*changes) != 0) {
+            return;
+         }
+      }
    }
 }
 
