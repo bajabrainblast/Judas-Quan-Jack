@@ -89,6 +89,13 @@ void remove_line(struct bblk *blk, struct line *line){
    // if (line)
 };
 
+void cfg_print_node(struct bblk *blk){
+   printf("Block %d:\n", blk->num);
+   struct line *line;
+   for (line = blk->lines; line; line = line->next) printf("\t%s\n", line->text);
+   if (blk->child  && blk->child->next) cfg_print_node(blk->child->next->id);
+   if (blk->child) cfg_print_node(blk->child->id);
+}
 
 void cfg_print(){
     if (!cfgs.func){
@@ -100,9 +107,7 @@ void cfg_print(){
         printf("Func %s\n", func->func->node->token);
         struct bblk *blk;
         for (blk = func->func; blk; blk = blk->down){
-            printf("Block %d:\n", blk->num);
-            struct line *line;
-            for (line = blk->lines; line; line = line->next) printf("\t%s\n", line->text);
+            cfg_print_node(blk);
         }
     }
 }
@@ -704,7 +709,7 @@ void remove_bblk_between(struct bblk *start, struct bblk *finish, struct bblk *p
       remove_parent(cchild->id,start);
    }
    remove_bblk(cfunc,start);
-   ch = start->child;
+   // ch = start->child;
    //start->child = NULL;
 }
 
@@ -736,8 +741,10 @@ void actual_elim(struct bblk *blk, struct line *if_line, struct bblk *gparent, i
             newstr[i] = '\0';
             break;
          }
-      //printf("%s\n", newstr);
-      rm_branch = gparent->child->next->id;
+      // printf("new: %s\n", newstr);
+      // remove else branch
+      rm_branch = gparent->child->id;
+      // printf("gparent: %s\n", gparent->lines->text);
    }
    // get the else
    else {
@@ -750,25 +757,15 @@ void actual_elim(struct bblk *blk, struct line *if_line, struct bblk *gparent, i
          tok = strtok(NULL, " ");
       }
       //printf("%s\n", newstr);
-      rm_branch = gparent->child->id;
+      // remove if branch
+      rm_branch = gparent->child->next->id;
    }
 
    // remove all blocks between rm_branch and blk
    printf("removing all between %s\n\t and %s\n", rm_branch->lines->text, if_line->text);
    remove_bblk_between(rm_branch, blk, gparent);
-   /*
-   if (type) {
-      gparent->child = NULL;
-   }
-   else {
-      gparent->child = gparent->child->next;
-      gparent->child->next = NULL;
-   }
-   */
-
    // replace old if with new str
    strcpy(if_line->text, newstr);
-
    free(tmp);
 }
 
@@ -787,6 +784,7 @@ void find_cond_consts(struct bblk *blk, struct line *if_line, struct bblk *gpare
    // for each line in the grandparent, grab the first token (the register)
    // and test if its the same as ifcond
    for (l=gparent->lines; l; l=l->next) {
+      printf("for\n");
       tmp = malloc(strlen(l->text) + 1);
       strcpy(tmp, l->text);
       tok = strtok(tmp, " ");
@@ -806,9 +804,9 @@ void find_cond_consts(struct bblk *blk, struct line *if_line, struct bblk *gpare
             actual_elim(blk, if_line, gparent, 0);
             (*changes)++;
          }
+         printf("Finished\n");
          break;
       }
-
       free(tmp);
    }
 }
