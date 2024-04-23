@@ -749,7 +749,6 @@ void actual_elim(struct bblk *blk, struct line *if_line, struct bblk *gparent, i
          }
       // printf("new: %s\n", newstr);
       // remove else branch
-      rm_branch = gparent->child->id;
       // printf("gparent: %s\n", gparent->lines->text);
    }
    // get the else
@@ -764,8 +763,28 @@ void actual_elim(struct bblk *blk, struct line *if_line, struct bblk *gparent, i
       }
       //printf("%s\n", newstr);
       // remove if branch
-      rm_branch = gparent->child->next->id;
    }
+   
+   // scan both children for setting the 2nd param of newstr
+   struct bblk_child *ch1, *ch2, *tmpch;
+   struct line *l;
+   char treg[10];
+   bool found = false;
+   sscanf(newstr, "%*s := %s", treg);
+   for (tmpch=gparent->child; tmpch && !found; tmpch=tmpch->next) {
+      for (l=tmpch->id->lines; l; l=l->next) {
+         if (!strncmp(treg, l->text, strlen(treg))) {
+            printf("found! %s\n", l->text);
+            found = true;
+            break;
+         }
+      }
+   }
+   // if found in the first child, remove the 2nd
+   if (tmpch == gparent->child)
+      rm_branch = gparent->child->id;
+   else
+      rm_branch = gparent->child->next->id;
 
    // remove all blocks between rm_branch and blk
    printf("removing all between %s\n\t and %s\n", rm_branch->lines->text, if_line->text);
