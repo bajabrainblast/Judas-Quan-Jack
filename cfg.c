@@ -89,6 +89,13 @@ void remove_line(struct bblk *blk, struct line *line){
    // if (line)
 };
 
+void cfg_print_node(struct bblk *blk){
+   printf("Block %d:\n", blk->num);
+   struct line *line;
+   for (line = blk->lines; line; line = line->next) printf("\t%s\n", line->text);
+   if (blk->child  && blk->child->next) cfg_print_node(blk->child->next->id);
+   if (blk->child) cfg_print_node(blk->child->id);
+}
 
 void cfg_print(){
     if (!cfgs.func){
@@ -100,9 +107,7 @@ void cfg_print(){
         printf("Func %s\n", func->func->node->token);
         struct bblk *blk;
         for (blk = func->func; blk; blk = blk->down){
-            printf("Block %d:\n", blk->num);
-            struct line *line;
-            for (line = blk->lines; line; line = line->next) printf("\t%s\n", line->text);
+            cfg_print_node(blk);
         }
     }
 }
@@ -289,6 +294,7 @@ void remove_parent(struct bblk *cblk, struct bblk *tblk) {
 
 void remove_child(struct bblk *cblk, struct bblk *tblk) {
    struct bblk_child *cchild = cblk->child;
+   bool removed = false;
    if (cchild->id == tblk) {
       cblk->child = cchild->next;
       free(cchild);
@@ -299,7 +305,12 @@ void remove_child(struct bblk *cblk, struct bblk *tblk) {
             struct bblk_child *tchild = cchild->next;
             cchild->next = cchild->next->next;
             free(tchild);
+            removed = true;
+            break;
          }
+      }
+      if (!removed) {
+         printf("remove child error\n");
       }
    }
 }
@@ -589,13 +600,16 @@ void add_nodes(FILE *fp, struct bblk* cblk) {
 }
 
 void reset_nodes(struct bblk* cblk) {
-   if (!cblk->visited) {
-      return;
-   }
+   /*
    struct bblk_child *cchild; 
    cblk->visited = false;
    for (cchild = cblk->child; cchild; cchild = cchild->next) {
       reset_nodes(cchild->id);
+   }
+   */
+   struct bblk *tblk;
+   for (tblk = cblk; tblk; tblk = tblk->next) {
+      tblk->visited = false;
    }
 }
 
@@ -684,7 +698,161 @@ void merge_blocks(int *changes){
    }
 }
 
-void eliminate_unreachable_code(int *changes){
+// remove [start, finish)
+void remove_bblk_between(struct bblk *start, struct bblk *finish, struct bblk *prev) {
+   struct bblk_child *ch, *ch2, *cchild;
+   struct bblk_parent *pr, *cparent;
+   if (start == finish)
+      return;
+   for (ch=start->child; ch; ch=ch->next) 
+      remove_bblk_between(ch->id, finish, start);
+   // printf("\tremoving %s\n", start->lines->text);
+   // so what i really want is to remove the link from the current block to its children. 
+   for (cparent = start->parent; cparent; cparent = cparent->next) {
+      remove_child(cparent->id,start);
+   }
+   for (cchild = start->child; cchild; cchild = cchild->next) {
+      remove_parent(cchild->id,start);
+   }
+   remove_bblk(cfunc,start);
+   // ch = start->child;
+   //start->child = NULL;
+}
+
+// type = 0 means ifcond was set to false
+void actual_elim(struct bblk *blk, struct line *if_line, struct bblk *gparent, int type) {
+   // if ifcond was set to true, replace if_line text with then statement
+   // ifcond was set to false, replace if_line text with else statement
+   int i;
+   struct bblk *rm_branch;
+   char newstr[50] = "", *tmp, *tok;
+   tmp = malloc(strlen(if_line->text) + 1);
+   strcpy(tmp, if_line->text);
+   tok = strtok(tmp, " ");
+   int vd, vi, vt, ve;
+   if (type) {
+      sscanf(if_line->text, "IF v%d = true, then v%d := v%d, else v%d := v%d", &vi, &vd, &vt, &vd, &ve);
+      for (struct bblk_child *cchild = gparent->child; cchild; cchild = cchild->next){
+         if (cchild->id->node->id == ve){
+            rm_branch = cchild->id;
+            break;
+         }
+      }
+   } else {
+      sscanf(if_line->text, "IF v%d = false, then v%d := v%d, else v%d := v%d", &vi, &vd, &vt, &vd, &ve);
+      for (struct bblk_child *cchild = gparent->child; cchild; cchild = cchild->next){
+         if (cchild->id->node->id == vt){
+            rm_branch = cchild->id;
+            break;
+         }
+      }
+   }
+   // printf("Dst: %d\nIf: %d\nThen: %d\nElse: %d\n", vd, vi, vt, ve);
+   // remove all blocks between rm_branch and blk
+   // printf("removing all between %s\n\t and %s\n", rm_branch->lines->text, if_line->text);
+   remove_bblk_between(rm_branch, blk, gparent);
+   // replace old if with new str
+   strcpy(if_line->text, newstr);
+   free(tmp);
+}
+
+void find_cond_consts(struct bblk *blk, struct line *if_line, struct bblk *gparent, int *changes) {
+   struct line *l;
+   char ifcond[10], var[10], *tmp, *tok;
+
+   // grab the if condition
+   tmp = malloc(strlen(if_line->text) + 1);
+   strcpy(tmp, if_line->text);
+   tok = strtok(tmp, " ");
+   tok = strtok(NULL, " ");
+   strncpy(ifcond, tok, 10);
+   free(tmp);
+
+   // for each line in the grandparent, grab the first token (the register)
+   // and test if its the same as ifcond
+   for (l=gparent->lines; l; l=l->next) {
+      // printf("for\n");
+      tmp = malloc(strlen(l->text) + 1);
+      strcpy(tmp, l->text);
+      tok = strtok(tmp, " ");
+      strncpy(var, tok, 10);
+
+      // if they're the same reg, then test to see if token after next is "true" or "false"
+      if (!strcmp(ifcond, tok)) {
+         tok = strtok(NULL, " ");
+         tok = strtok(NULL, " ");
+         if (!strcmp(tok, "true")) {
+            // printf("%s was set to TRUE!\n", ifcond);
+            actual_elim(blk, if_line, gparent, 1);
+            (*changes)++;
+         }
+         else if (!strcmp(tok, "false")) {
+            // printf("%s was set to FALSE!\n", ifcond);
+            actual_elim(blk, if_line, gparent, 0);
+            (*changes)++;
+         }
+         // printf("Finished\n");
+         break;
+      }
+      free(tmp);
+   }
+}
+
+void find_ifs(struct bblk *blk, int *changes, struct funcs *froot) {
+   struct line *l_if, *l_set, *l, *l2;
+   struct bblk_child *child = blk->child;
+   struct bblk *tblk;
+   char reg[10];
+   if (blk->visited)
+      return;
+   blk->visited = true;
+   for (l=blk->lines; l; l=l->next) {
+      if (!strncmp(l->text, "IF", 2)) {
+         //printf("%s\n", l->text);
+
+         // find where cfg branches
+         sscanf(l->text, "IF %s = %*s", reg);
+         for (tblk=froot->func; tblk; tblk=tblk->next) {
+            // if assigning to if condition, that is bblk we need
+            if (!strncmp(tblk->lines->text, reg, strlen(reg))) {
+               // ensure has two children, otherwise already applied optimization
+               if (tblk->child && tblk->child->next)
+                  find_cond_consts(blk, l, tblk, changes);
+               if ((*changes) != 0) {
+                  return;
+               }
+               break;
+            }
+         }
+      }
+   }
+   for (child = blk->child; child; child = child->next){
+      if (child && child->id) {
+         find_ifs(child->id, changes, froot);
+         if ((*changes) != 0) {
+            return;
+         }
+      }
+   }
+}
+
+void eliminate_unreachable_code(int *changes) {
+   struct funcs *func;
+   struct bblk_child *child;
+   struct line *l;
+
+   for (func = &cfgs; func; func = func->next)
+      reset_nodes(func->func);
+
+   for (func = &cfgs; func; func = func->next) {
+      //printf("%s-----\n", func->func->lines->text);
+      cfunc = func;
+      find_ifs(func->func->child->id, changes, func);
+   }
+
+   for (func = &cfgs; func; func = func->next)
+      reset_nodes(func->func);
+
    return;
 }
 
