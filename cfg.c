@@ -706,7 +706,7 @@ void remove_bblk_between(struct bblk *start, struct bblk *finish, struct bblk *p
       return;
    for (ch=start->child; ch; ch=ch->next) 
       remove_bblk_between(ch->id, finish, start);
-   printf("\tremoving %s\n", start->lines->text);
+   // printf("\tremoving %s\n", start->lines->text);
    // so what i really want is to remove the link from the current block to its children. 
    for (cparent = start->parent; cparent; cparent = cparent->next) {
       remove_child(cparent->id,start);
@@ -729,65 +729,27 @@ void actual_elim(struct bblk *blk, struct line *if_line, struct bblk *gparent, i
    tmp = malloc(strlen(if_line->text) + 1);
    strcpy(tmp, if_line->text);
    tok = strtok(tmp, " ");
-
-   // get the then
+   int vd, vi, vt, ve;
    if (type) {
-      while(strcmp(tok, "then") != 0)
-         tok = strtok(NULL, " ");
-      // when tok = then, grab everything until the else
-      tok = strtok(NULL, " ");
-      while(strcmp(tok, "else") != 0) {
-         strcat(newstr, tok);
-         strcat(newstr, " ");
-         tok = strtok(NULL, " ");
-      }
-      // remove the comma
-      for (i=49; i>=0; i--) 
-         if (newstr[i] == ',') {
-            newstr[i] = '\0';
+      sscanf(if_line->text, "IF v%d = true, then v%d := v%d, else v%d := v%d", &vi, &vd, &vt, &vd, &ve);
+      for (struct bblk_child *cchild = gparent->child; cchild; cchild = cchild->next){
+         if (cchild->id->node->id == ve){
+            rm_branch = cchild->id;
             break;
          }
-      // printf("new: %s\n", newstr);
-      // remove else branch
-      // printf("gparent: %s\n", gparent->lines->text);
-   }
-   // get the else
-   else {
-      while(strcmp(tok, "else") != 0)
-         tok = strtok(NULL, " ");
-      tok = strtok(NULL, " ");
-      while(tok) {
-         strcat(newstr, tok);
-         strcat(newstr, " ");
-         tok = strtok(NULL, " ");
       }
-      //printf("%s\n", newstr);
-      // remove if branch
-   }
-   
-   // scan both children for setting the 2nd param of newstr
-   struct bblk_child *ch1, *ch2, *tmpch;
-   struct line *l;
-   char treg[10];
-   bool found = false;
-   sscanf(newstr, "%*s := %s", treg);
-   for (tmpch=gparent->child; tmpch && !found; tmpch=tmpch->next) {
-      for (l=tmpch->id->lines; l; l=l->next) {
-         if (!strncmp(treg, l->text, strlen(treg))) {
-            printf("found! %s\n", l->text);
-            found = true;
+   } else {
+      sscanf(if_line->text, "IF v%d = false, then v%d := v%d, else v%d := v%d", &vi, &vd, &vt, &vd, &ve);
+      for (struct bblk_child *cchild = gparent->child; cchild; cchild = cchild->next){
+         if (cchild->id->node->id == vt){
+            rm_branch = cchild->id;
             break;
          }
       }
    }
-   // if found in the first child, remove the 2nd
-   if (tmpch == gparent->child)
-      rm_branch = gparent->child->id;
-   else
-      rm_branch = gparent->child->next->id;
-
+   // printf("Dst: %d\nIf: %d\nThen: %d\nElse: %d\n", vd, vi, vt, ve);
    // remove all blocks between rm_branch and blk
-   printf("removing all between %s\n\t and %s\n", rm_branch->lines->text, if_line->text);
+   // printf("removing all between %s\n\t and %s\n", rm_branch->lines->text, if_line->text);
    remove_bblk_between(rm_branch, blk, gparent);
    // replace old if with new str
    strcpy(if_line->text, newstr);
@@ -809,7 +771,7 @@ void find_cond_consts(struct bblk *blk, struct line *if_line, struct bblk *gpare
    // for each line in the grandparent, grab the first token (the register)
    // and test if its the same as ifcond
    for (l=gparent->lines; l; l=l->next) {
-      printf("for\n");
+      // printf("for\n");
       tmp = malloc(strlen(l->text) + 1);
       strcpy(tmp, l->text);
       tok = strtok(tmp, " ");
@@ -820,16 +782,16 @@ void find_cond_consts(struct bblk *blk, struct line *if_line, struct bblk *gpare
          tok = strtok(NULL, " ");
          tok = strtok(NULL, " ");
          if (!strcmp(tok, "true")) {
-            printf("%s was set to TRUE!\n", ifcond);
+            // printf("%s was set to TRUE!\n", ifcond);
             actual_elim(blk, if_line, gparent, 1);
             (*changes)++;
          }
          else if (!strcmp(tok, "false")) {
-            printf("%s was set to FALSE!\n", ifcond);
+            // printf("%s was set to FALSE!\n", ifcond);
             actual_elim(blk, if_line, gparent, 0);
             (*changes)++;
          }
-         printf("Finished\n");
+         // printf("Finished\n");
          break;
       }
       free(tmp);
