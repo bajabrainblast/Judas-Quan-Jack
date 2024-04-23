@@ -749,6 +749,7 @@ void actual_elim(struct bblk *blk, struct line *if_line, struct bblk *gparent, i
    int vd, vi, vt, ve;
    if (type) {
       sscanf(if_line->text, "IF v%d = true, then v%d := v%d, else v%d := v%d", &vi, &vd, &vt, &vd, &ve);
+      sprintf(newstr,"v%d := v%d",vd,vt);
       for (struct bblk_child *cchild = gparent->child; cchild; cchild = cchild->next){
          if (branch_has_node(cchild->id, blk, ve)){
             rm_branch = cchild->id;
@@ -756,7 +757,9 @@ void actual_elim(struct bblk *blk, struct line *if_line, struct bblk *gparent, i
          }
       }
    } else {
-      sscanf(if_line->text, "IF v%d = false, then v%d := v%d, else v%d := v%d", &vi, &vd, &vt, &vd, &ve);
+      //sscanf(if_line->text, "IF v%d = false, then v%d := v%d, else v%d := v%d", &vi, &vd, &vt, &vd, &ve);
+      sscanf(if_line->text, "IF v%d = true, then v%d := v%d, else v%d := v%d", &vi, &vd, &vt, &vd, &ve);
+      sprintf(newstr,"v%d := v%d",vd,ve);
       for (struct bblk_child *cchild = gparent->child; cchild; cchild = cchild->next){
          if (branch_has_node(cchild->id, blk, vt)){
             rm_branch = cchild->id;
@@ -790,6 +793,19 @@ void find_cond_consts(struct bblk *blk, struct line *if_line, struct bblk *gpare
    // and test if its the same as ifcond
    for (l=gparent->lines; l; l=l->next) {
       // printf("for\n");
+      if (strstr(l->text,ifcond)) {
+         if (strstr(l->text, "true")){
+            printf("%s was set to TRUE!\n", ifcond);
+            actual_elim(blk, if_line, gparent, 1);
+            (*changes)++;
+         } else {
+            printf("%s was set to FALSE!\n", ifcond);
+            actual_elim(blk, if_line, gparent, 0);
+            (*changes)++;
+         }
+      }
+
+      /*
       tmp = malloc(strlen(l->text) + 1);
       strcpy(tmp, l->text);
       // tok = strtok(tmp, " ");
@@ -826,6 +842,7 @@ void find_cond_consts(struct bblk *blk, struct line *if_line, struct bblk *gpare
       //    break;
       // }
       free(tmp);
+      */
    }
 }
 
