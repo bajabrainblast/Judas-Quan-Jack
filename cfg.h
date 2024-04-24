@@ -46,6 +46,7 @@ struct bblk_parent {
 struct funcs {
     struct bblk *func;
     struct funcs *next;
+    struct funcs *prev;
 };
 
 struct reg_map *rm_create(char *reg, struct ast *node);

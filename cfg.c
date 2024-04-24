@@ -31,7 +31,7 @@ struct line *create_line(char *text){
     struct line *line = (struct line *)malloc(sizeof(struct line));
     line->text = strdup(text);
     line->next = NULL;
-    return line; 
+    return line;
 }
 
 struct bblk *create_bblk(struct ast *node, struct line *line){
@@ -73,6 +73,7 @@ void add_function(struct funcs *func){
     struct funcs *cfunc;
     for (cfunc = &cfgs; cfunc->next; cfunc = cfunc->next);
     cfunc->next = func;
+    func->prev = cfunc;
 }
 
 void append_line(struct bblk *blk, struct line *line){
@@ -563,9 +564,9 @@ int cfg(struct ast *node){
         get_vreg(node, reg);
         rm_create(reg, node);
       } else if (!strcmp(node->token, "if")){
-        printf("If Node: %s\n", node->token);  
+        printf("If Node: %s\n", node->token);
       } else if (!strcmp(node->token, "let")){
-        printf("Let Node: %s\n", node->token);  
+        printf("Let Node: %s\n", node->token);
       } else {
         printf("Variable Node: %s\n", node->token);
         struct line *text = create_line(form_text(node, 0));
@@ -583,7 +584,7 @@ void add_nodes(FILE *fp, struct bblk* cblk) {
    if (cblk->visited) {
       return;
    }
-   struct bblk_child *cchild; 
+   struct bblk_child *cchild;
    cblk->visited = true;
    char text[MAX_LINE_SIZE * MAX_LINE_NUM] = "";
    strcat(text, cblk->lines->text);
@@ -601,7 +602,7 @@ void add_nodes(FILE *fp, struct bblk* cblk) {
 
 void reset_nodes(struct bblk* cblk) {
    /*
-   struct bblk_child *cchild; 
+   struct bblk_child *cchild;
    cblk->visited = false;
    for (cchild = cblk->child; cchild; cchild = cchild->next) {
       reset_nodes(cchild->id);
@@ -616,7 +617,7 @@ void reset_nodes(struct bblk* cblk) {
 void cfg_dot(char *name) {
     struct funcs *func;
     struct bblk *blk;
-    struct bblk_child *cchild; 
+    struct bblk_child *cchild;
     FILE *fp;
     char string[50];
 
@@ -627,7 +628,7 @@ void cfg_dot(char *name) {
     sprintf(string, "%s.dot", name);
     fp = fopen(string, "w");
     fprintf(fp, "digraph print {\n ");
-    
+
     // add all nodes and links to dot file
     for (func=&cfgs; func; func=func->next) {
        if (func->func)
@@ -652,7 +653,7 @@ void merge(struct bblk *parent, struct bblk *child){
    struct line *line;
    //parent->child = child->child;
    //parent->next = child->next;
-   for (cchild = child->child; cchild; cchild = cchild->next){ 
+   for (cchild = child->child; cchild; cchild = cchild->next){
       remove_parent(cchild->id, child);
       add_parent(cchild->id, parent);
       add_child(parent,cchild->id);
@@ -704,10 +705,10 @@ void remove_bblk_between(struct bblk *start, struct bblk *finish, struct bblk *p
    struct bblk_parent *pr, *cparent;
    if (start == finish)
       return;
-   for (ch=start->child; ch; ch=ch->next) 
+   for (ch=start->child; ch; ch=ch->next)
       remove_bblk_between(ch->id, finish, start);
    // printf("\tremoving %s\n", start->lines->text);
-   // so what i really want is to remove the link from the current block to its children. 
+   // so what i really want is to remove the link from the current block to its children.
    for (cparent = start->parent; cparent; cparent = cparent->next) {
       remove_child(cparent->id,start);
    }
@@ -1001,5 +1002,5 @@ void duplicate_branch_elimination(int *changes){
 
       }
    }
-   return;   
+   return;
 }
