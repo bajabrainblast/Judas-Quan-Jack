@@ -1,6 +1,6 @@
-(define-fun t1 int (+ (+ 1 (- 2 3)) 6))
+(define-fun t1 int (+ (+ 1 (- 2 3) (div 5 2)) 6))
 ; Test comment enetered here 34
 (define-fun t2 int (+ 1 (get-int)))
 (define-fun t3 int (mod (t1) (t1)))
-(define-fun t4 bool (and true true))
+(define-fun t4 bool (and true true (not true)))
 (print (+ (- (t1) (t2)) (t3)))

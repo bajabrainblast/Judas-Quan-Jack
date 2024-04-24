@@ -3,6 +3,7 @@
 #define MAX_LINE_NUM 255
 #define MAX_LINE_SIZE 255
 #define MAX_REG_LEN 5
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include "ast.h"
