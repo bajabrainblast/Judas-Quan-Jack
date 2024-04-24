@@ -7,6 +7,8 @@
 #include "table.h"
 #include "visitors.h"
 #include "map.h"
+#include "codegen.h"
+
 int yyparse();
 
 int cleanup(int error){
@@ -67,5 +69,8 @@ int main (int argc, char **argv) {
     changes ? printf("%d changes\n", changes) : printf("Optimizations Done\n");
   }
   cfg_dot("cfg");
+
+  generate_c_code();
+
   return cleanup(0);
 }
