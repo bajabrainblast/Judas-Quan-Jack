@@ -10,6 +10,7 @@ struct reg_map *rm_create(char *reg, struct ast *node){
     struct reg_map *mapping = (struct reg_map *) malloc(sizeof(struct reg_map));
     mapping->node = node;
     mapping->reg = reg;
+    mapping->next = NULL;
     return mapping;
 }
 

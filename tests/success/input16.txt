@@ -1,4 +1,4 @@
-(define-fun const bool (= (let (c 1) c) 1))
+(define-fun constant bool (= (let (c 1) c) 1))
 (define-fun test (a int) (b int) bool
-(if true (> 1 (+ a b)) (const)))
+(if true (> 1 (+ a b)) (constant)))
 (print (if (test 1 2) (if (get-bool) 1 1) 5))

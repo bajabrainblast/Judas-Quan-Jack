@@ -4,14 +4,48 @@
 //     if (!map)
 // }
 
-void get_virtual_regs(struct bblk *blk, struct reg_map *map){
+int declared(struct reg_map *list, char *var){
+    printf("Checking %s:\n", var);
+    struct reg_map *r;
+    for (r = list; r; r = r->next){
+        printf("\t%s\n", r->reg);
+        if (!strcmp(r->reg, var)) return 1;
+    }
+    return 0;
+}
+
+void insert_var(struct reg_map **list, struct reg_map *var){
+    printf("Inserting %s\n", var->reg);
+    if (!(*list)) {
+        *list = var;
+        return;
+    }
+    struct reg_map *r;
+    for (r = *list; r->next; r = r->next);
+    r->next = var;
+}
+
+void print_var(char *reg, int *first, FILE *fp){
+        if (*first){
+            fprintf(fp, "%s", reg);
+            *first = 0;
+        } else fprintf(fp, ", %s", reg);
+}
+
+void get_virtual_regs(struct bblk *blk, int *first, FILE *fp){
     char reg[MAX_REG_LEN] = "\0", buf[MAX_LINE_SIZE];
     for (struct line *l = blk->lines; l; l = l->next){
+        if (strstr(l->text, "IF")){
+            char buf2[MAX_LINE_SIZE];
+            sscanf(l->text, "%[^,], then %s %[^\t\n]", buf, reg, buf2);
+            print_var(reg, first, fp);
+            continue;
+        }
         sscanf(l->text, "%s := %[^\t\n]", reg, buf);
-        printf("%s\n", reg);
+        print_var(reg, first, fp);
     }
     for (struct bblk_child *cc = blk->child; cc; cc = cc->next){
-        get_virtual_regs(cc->id, map);
+        get_virtual_regs(cc->id, first, fp);
     }
 }
 
@@ -37,12 +71,23 @@ void gen_header(FILE *fp) {
     fprintf(fp, "}\n\n");
     
     // vars
-    // Virtual Registers
+    fprintf(fp, "int ");
+    // Function arguments, local variables, and virtual registers
     extern struct funcs cfgs;
-    struct reg_map *regs;
-    for (struct funcs *f = &cfgs; f; f = f->next){
-        get_virtual_regs(f->func->child->id, regs);
+    struct funcs *f;
+    struct reg_map *vars = NULL;
+    int first = 1;
+    for (f = &cfgs; f; f = f->next){
+        struct table_entry *e = st_get_func(f->func->node->token);
+        for (int i = 0; i < e->num_arg; i++){
+            char *token = find_ast_node(e->args[i].id)->token;
+            if (declared(vars, token)) continue;
+            print_var(token, &first, fp);
+            insert_var(&vars, rm_create(token, NULL));
+        }
+        get_virtual_regs(f->func->child->id, &first, fp);
     }
+    fprintf(fp, ";\n\n");
 
     // char varstr[200] = "\0";
     // extern struct sym_table table;
@@ -66,7 +111,18 @@ void gen_header(FILE *fp) {
 
 struct bblk *find_definition(struct bblk *blk, char reg[MAX_REG_LEN]){
     for (struct line *l = blk->lines; l; l = l->next){
+        if (strstr(l->text, "IF")){
+            char b1[MAX_LINE_SIZE] = "\0", b2[MAX_LINE_SIZE] = "\0", vi[MAX_REG_LEN] = "\0";
+            printf("|%s|\n", l->text);
+            sscanf(l->text, "%[^,], then %s %[^\t\n]", b1, vi, b2);
+            printf("Match %s with %s\n", reg, vi);
+            if (!strcmp(vi, reg)) return blk;
+        }
         if (!strncmp(l->text, reg, strlen(reg))) return blk;
+    }
+    for (struct bblk_parent *p = blk->parent; p; p = p->next){
+        struct bblk *result = find_definition(p->id, reg);
+        if (result) return result;
     }
     for (struct bblk_parent *p = blk->parent; p; p = p->next){
         struct bblk *result = find_definition(p->id, reg);
@@ -85,6 +141,7 @@ void generate_node_code(struct bblk *blk, FILE *fp){
     for (struct line *l = blk->lines; l; l = l->next){
         char vi[MAX_REG_LEN], vd[MAX_REG_LEN], vt[MAX_REG_LEN], ve[MAX_REG_LEN];
         if (strstr(l->text, "IF")){
+            // THIS NEEDS TO BE UPDATED TO USE GRAPH REACHABILITY ALGORITHM FROM CLASS
             sscanf(l->text, "IF %s = %[^,], then %s := %[^,], else %s := %s", vi, t1, vd, vt, vd, ve);
             struct bblk *tblk = find_definition(blk, vt), *eblk = find_definition(blk, ve);
             fprintf(fp, "\t\tif (%s) goto bb%d; else goto bb%d;\n", vi, tblk->node->id, eblk->node->id);
@@ -132,14 +189,14 @@ void gen_func(struct bblk *root, FILE *fp) {
     struct table_entry *e = st_get_func(root->node->token);
     // printf("%s: %s\n", e->name, e->type ? "int" : "bool");
     char buf[MAX_LINE_SIZE] = "\0", text[MAX_LINE_SIZE] = "\0";
-    sprintf(text, "%s %s (", e->type ? "int" : "bool", e->name);
+    sprintf(text, "int %s (", e->name);
     int first = 1;
     for (int i = 0; i < e->num_arg; i++){
         // printf("\t%s: %s\n", find_ast_node(e->args[i].id)->token, e->args[i].type ? "int" : "bool");
         if (first){
-            sprintf(buf, "%s %s", "int", find_ast_node(e->args[i].id)->token);
+            sprintf(buf, "int %s", find_ast_node(e->args[i].id)->token);
             first = 0;
-        } else sprintf(buf, ", %s %s", "int", find_ast_node(e->args[i].id)->token);
+        } else sprintf(buf, ", int %s", find_ast_node(e->args[i].id)->token);
         strcat(text, buf);
     }
     strcat(text, ") {");
