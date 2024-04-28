@@ -131,6 +131,58 @@ struct bblk *find_definition(struct bblk *blk, char reg[MAX_REG_LEN]){
     return NULL;
 }
 
+void dfs(struct bblk *left, struct bblk *left_prev, int *branch_count, int *left_is_then, char **cond_reg) {
+   bool match_if = 0;
+   for (struct line *l = left->lines; l; l = l->next) {
+      if (strstr(l->text, "IF")){
+         if ((*branch_count) == 1) {
+            char vi[MAX_REG_LEN], vd[MAX_REG_LEN], vt[MAX_REG_LEN], ve[MAX_REG_LEN];
+            char buf[MAX_LINE_SIZE] = "\0", t1[MAX_LINE_SIZE / 2 - 1] = "\0", t2[MAX_LINE_SIZE / 2 - 1] = "\0";
+            char def_line_vd[MAX_REG_LEN];
+            match_if = true;
+            struct line *def_line;
+            for (def_line = left_prev->lines; def_line->next; def_line = def_line->next);
+            if (strstr(def_line->text, "IF")) {
+               sscanf(def_line->text, "IF %s = %[^,], then %s := %[^,], else %s := %s", vi, t1, vd, vt, vd, ve);
+            }
+            else {
+               sscanf(def_line->text, "%s := %[^\n]", vd, buf);
+            }
+            strcpy(def_line_vd,vd);
+            sscanf(def_line->text, "IF %s = %[^,], then %s := %[^,], else %s := %s", vi, t1, vd, vt, vd, ve);
+            strcpy((*cond_reg),vi);
+            if (strcmp(def_line_vd,vt)) {
+               (*left_is_then) = 1;
+            }
+            else {
+               (*left_is_then) = 0;
+            }
+         }
+         else {
+            (*branch_count) = (*branch_count) - 1;
+         }
+      }
+      else {
+         continue;
+      }
+   }
+   if (left->child && left->child->next) {
+      (*branch_count) = (*branch_count) + 1;
+   }
+   if (!match_if) {
+      dfs(left->child->id,left,branch_count,left_is_then,cond_reg);
+   }
+}
+
+bool is_conditional_blk(struct bblk *cblk) {
+   for (struct line *l = cblk->lines; l; l = l->next) {
+      if (strstr(l->text, "IF")) {
+         return true;
+      }
+   }
+   return false;
+}
+
 void generate_node_code(struct bblk *blk, FILE *fp){
     if (blk->visited) return;
     blk->visited = true;
@@ -142,9 +194,11 @@ void generate_node_code(struct bblk *blk, FILE *fp){
         char vi[MAX_REG_LEN], vd[MAX_REG_LEN], vt[MAX_REG_LEN], ve[MAX_REG_LEN];
         if (strstr(l->text, "IF")){
             // THIS NEEDS TO BE UPDATED TO USE GRAPH REACHABILITY ALGORITHM FROM CLASS
+            /*
             sscanf(l->text, "IF %s = %[^,], then %s := %[^,], else %s := %s", vi, t1, vd, vt, vd, ve);
             struct bblk *tblk = find_definition(blk, vt), *eblk = find_definition(blk, ve);
             fprintf(fp, "\t\tif (%s) goto bb%d; else goto bb%d;\n", vi, tblk->node->id, eblk->node->id);
+            */
         } else {
             printf("%s\n",l->text);
             sscanf(l->text, "%s := %[^\n]", vd, buf);
@@ -178,7 +232,43 @@ void generate_node_code(struct bblk *blk, FILE *fp){
             fprintf(fp, "\t\t%s = %s;\n", vd, buf);
         }
     }
-    if (blk->child) fprintf(fp, "\t\tgoto bb%d;\n",blk->child->id->node->id);
+    if (blk->child && blk->child->next) {
+         struct bblk *left = blk->child->id;
+         struct bblk *right = blk->child->next->id;
+         char cond_reg[MAX_REG_LEN];
+         int branch_count = 1;
+         int left_is_then = 0;
+         dfs(left,NULL,&branch_count,&left_is_then,&cond_reg);
+         if (left_is_then) {
+            fprintf(fp, "\t\tif (%s) goto bb%d;\n",cond_reg,left->node->id);
+            fprintf(fp, "\t\telse goto bb%d;\n",right->node->id);
+         }
+         else {
+            fprintf(fp, "\t\tif (%s) goto bb%d;\n",cond_reg,right->node->id);
+            fprintf(fp, "\t\telse goto bb%d;\n",left->node->id);
+         }
+    }
+    else if (blk->child) {
+      if (is_conditional_blk(blk->child->id)) {
+         char vi[MAX_REG_LEN], vd[MAX_REG_LEN], vt[MAX_REG_LEN], ve[MAX_REG_LEN];
+         struct line *if_line;
+         struct line *clineend;
+         for (clineend = blk->lines; clineend->next; clineend = clineend->next);
+         for (if_line = blk->child->id->lines; if_line; if_line = if_line->next) {
+            if (strstr(if_line->text, "IF")) {
+               break;
+            }
+         }
+         sscanf(if_line->text, "IF %s = %[^,], then %s := %[^,], else %s := %s", vi, t1, vd, vt, vd, ve);
+         if (strstr(clineend->text,vt)) {
+            fprintf(fp, "\t\t%s = %s;\n", vd,vt);
+         }
+         else {
+            fprintf(fp, "\t\t%s = %s;\n", vd,ve);
+         }
+      }
+      fprintf(fp, "\t\tgoto bb%d;\n",blk->child->id->node->id);
+    }
     else fprintf(fp, "\t\treturn v%d;\n", blk->node->id);
     for (struct bblk_child *c = blk->child; c; c = c->next){
         generate_node_code(c->id, fp);
