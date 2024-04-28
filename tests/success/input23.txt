@@ -1,0 +1,4 @@
+(define-fun f (a int) int (let (c (let (b (div a 2)) (+ b 1))) (+ c 3)))
+(define-fun g (a int) (b bool) int
+(if b (f a) 1))
+(print (g (get-int) (get-bool)))
