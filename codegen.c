@@ -131,7 +131,7 @@ struct bblk *find_definition(struct bblk *blk, char reg[MAX_REG_LEN]){
     return NULL;
 }
 
-void dfs(struct bblk *left, struct bblk *left_prev, int *branch_count, int *left_is_then, char **cond_reg) {
+void dfs(struct bblk *left, struct bblk *left_prev, int *branch_count, int *left_is_then, char *cond_reg) {
    bool match_if = 0;
    for (struct line *l = left->lines; l; l = l->next) {
       if (strstr(l->text, "IF")){
@@ -149,9 +149,9 @@ void dfs(struct bblk *left, struct bblk *left_prev, int *branch_count, int *left
                sscanf(def_line->text, "%s := %[^\n]", vd, buf);
             }
             strcpy(def_line_vd,vd);
-            sscanf(def_line->text, "IF %s = %[^,], then %s := %[^,], else %s := %s", vi, t1, vd, vt, vd, ve);
-            strcpy((*cond_reg),vi);
-            if (strcmp(def_line_vd,vt)) {
+            sscanf(l->text, "IF %s = %[^,], then %s := %[^,], else %s := %s", vi, t1, vd, vt, vd, ve);
+            strcpy(cond_reg,vi);
+            if (!strcmp(def_line_vd,vt)) {
                (*left_is_then) = 1;
             }
             else {
@@ -183,7 +183,7 @@ bool is_conditional_blk(struct bblk *cblk) {
    return false;
 }
 
-void generate_node_code(struct bblk *blk, FILE *fp){
+void generate_node_code(struct bblk *blk, FILE *fp, bool is_main) {
     if (blk->visited) return;
     blk->visited = true;
     char buf[MAX_LINE_SIZE] = "\0", t1[MAX_LINE_SIZE / 2 - 1] = "\0", t2[MAX_LINE_SIZE / 2 - 1] = "\0";
@@ -238,7 +238,7 @@ void generate_node_code(struct bblk *blk, FILE *fp){
          char cond_reg[MAX_REG_LEN];
          int branch_count = 1;
          int left_is_then = 0;
-         dfs(left,NULL,&branch_count,&left_is_then,&cond_reg);
+         dfs(left,NULL,&branch_count,&left_is_then,cond_reg);
          if (left_is_then) {
             fprintf(fp, "\t\tif (%s) goto bb%d;\n",cond_reg,left->node->id);
             fprintf(fp, "\t\telse goto bb%d;\n",right->node->id);
@@ -269,9 +269,16 @@ void generate_node_code(struct bblk *blk, FILE *fp){
       }
       fprintf(fp, "\t\tgoto bb%d;\n",blk->child->id->node->id);
     }
-    else fprintf(fp, "\t\treturn v%d;\n", blk->node->id);
+    else {
+       if (is_main) {
+          fprintf(fp, "\t\tprintf(\"Output: %%d\\n\",v%d);\n", blk->node->id);
+       }
+       else {
+          fprintf(fp, "\t\treturn v%d;\n", blk->node->id);
+       }
+    }
     for (struct bblk_child *c = blk->child; c; c = c->next){
-        generate_node_code(c->id, fp);
+        generate_node_code(c->id, fp, is_main);
     }
 }
 
@@ -284,19 +291,23 @@ void gen_func(struct bblk *root, FILE *fp) {
     for (int i = 0; i < e->num_arg; i++){
         // printf("\t%s: %s\n", find_ast_node(e->args[i].id)->token, e->args[i].type ? "int" : "bool");
         if (first){
-            sprintf(buf, "int %s", find_ast_node(e->args[i].id)->token);
-            first = 0;
-        } else sprintf(buf, ", int %s", find_ast_node(e->args[i].id)->token);
+           sprintf(buf, "int %s", find_ast_node(e->args[i].id)->token);
+           first = 0;
+        } else {
+           sprintf(buf, ", int %s", find_ast_node(e->args[i].id)->token);
+        }
         strcat(text, buf);
     }
     strcat(text, ") {");
     fprintf(fp, "%s\n", text);
-    generate_node_code(root->child->id, fp);
+    generate_node_code(root->child->id, fp, false);
     fprintf(fp, "}\n\n");
 }
 
 void gen_main(struct bblk *root, FILE *fp) {
-    fprintf(fp, "int main(void){ return 0; }\n");
+    fprintf(fp, "int main(void){\n");
+    generate_node_code(root->child->id, fp, true);
+    fprintf(fp, "\treturn 0;\n}\n");
 }
 
 void generate_c_code() {
