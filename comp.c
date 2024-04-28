@@ -7,6 +7,8 @@
 #include "table.h"
 #include "visitors.h"
 #include "map.h"
+#include "codegen.h"
+
 int yyparse();
 
 int cleanup(int error){
@@ -18,12 +20,16 @@ int cleanup(int error){
 }
 
 int main (int argc, char **argv) {
+  int swo = 0;
   extern struct stack st;
   st.top = NULL;
   extern struct sym_table table;
   table.start = NULL;
   extern struct type_map map;
   map.start = NULL;
+  for (int i = 1; i < argc; i++){
+    if (!strcmp(argv[i], "--opt") || !strcmp(argv[i], "-o")) swo = 1;
+  }
   if (!yyparse()) {
     visit_ast(fill_table);
     if (visit_ast(declare_var_before_use)) return cleanup(1);
@@ -50,22 +56,23 @@ int main (int argc, char **argv) {
     if (visit_ast(well_formed_not)) return cleanup(14);
     if (visit_ast(if_first_arg)) return cleanup(12);
     if (visit_ast(func_call_args_type)) return cleanup(14);
-    //if (visit_ast(check_lets)) return cleanup(15);
-  }
-  else {
-     return 15;
-  }
+  } else return 15;
   visit_ast(cfg_construct);
   cfg_dot("unopt_cfg");
-  // do optimizations
-  int changes = 1;
-  while (changes){
-    changes = 0;
-    merge_blocks(&changes);
-    eliminate_unreachable_code(&changes);
-    duplicate_branch_elimination(&changes);
-    changes ? printf("%d changes\n", changes) : printf("Optimizations Done\n");
+  if (swo){
+    // do optimizations
+    int changes = 1;
+    while (changes){
+      changes = 0;
+      merge_blocks(&changes);
+      eliminate_unreachable_code(&changes);
+      duplicate_branch_elimination(&changes);
+      changes ? printf("%d changes\n", changes) : printf("Optimizations Done\n");
+    }
+    cfg_dot("cfg");
   }
-  cfg_dot("cfg");
+
+  generate_c_code();
+
   return cleanup(0);
 }

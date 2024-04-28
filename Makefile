@@ -2,8 +2,8 @@ CC	= gcc
 YACC= yacc
 LEX	= lex
 
-comp:	y.tab.c lex.yy.c ast.c comp.c stack.o table.o helpers.o visitors.o map.o cfg.o
-	$(CC) -g lex.yy.c y.tab.c ast.c comp.c stack.o table.o helpers.o visitors.o map.o cfg.o -o comp
+comp:	y.tab.c lex.yy.c ast.c comp.c stack.o table.o helpers.o visitors.o map.o cfg.o codegen.o
+	$(CC) -g lex.yy.c y.tab.c ast.c comp.c stack.o table.o helpers.o visitors.o map.o cfg.o codegen.o -o comp
 
 y.tab.c: parser.y
 	$(YACC) -d parser.y
@@ -29,5 +29,8 @@ map.o: map.c map.h
 cfg.o: cfg.c cfg.h
 	$(CC) -c -g cfg.c
 
+codegen.o: codegen.c codegen.h
+	$(CC) -c -g codegen.c
+
 clean: 
-	rm -f comp lex.yy.c y.tab.c y.tab.h *.o ast.dot ast.pdf cfg.dot cfg.pdf
+	rm -f comp lex.yy.c y.tab.c y.tab.h *.o *.dot *.pdf

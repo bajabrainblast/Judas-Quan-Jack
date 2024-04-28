@@ -13,3 +13,5 @@ comp
 *.dSYM/
 log
 *.swo
+output.c
+out

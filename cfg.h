@@ -3,6 +3,7 @@
 #define MAX_LINE_NUM 255
 #define MAX_LINE_SIZE 255
 #define MAX_REG_LEN 5
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include "ast.h"
@@ -46,6 +47,7 @@ struct bblk_parent {
 struct funcs {
     struct bblk *func;
     struct funcs *next;
+    struct funcs *prev;
 };
 
 struct reg_map *rm_create(char *reg, struct ast *node);
