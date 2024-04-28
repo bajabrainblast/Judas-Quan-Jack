@@ -42,7 +42,6 @@ int main (int argc, char **argv) {
     visit_ast(init_map);
     while (true) {
       visit_ast(fill_map);
-      printf("passed\n");
       if (!tm_contains_unknowns()) {
          break;
       }

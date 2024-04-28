@@ -1,21 +1,14 @@
 #include "codegen.h"
 
-// void insert_reg(struct reg_map *map, char *reg){
-//     if (!map)
-// }
-
 int declared(struct reg_map *list, char *var){
-    printf("Checking %s:\n", var);
     struct reg_map *r;
     for (r = list; r; r = r->next){
-        printf("\t%s\n", r->reg);
         if (!strcmp(r->reg, var)) return 1;
     }
     return 0;
 }
 
 void insert_var(struct reg_map **list, struct reg_map *var){
-    printf("Inserting %s\n", var->reg);
     if (!(*list)) {
         *list = var;
         return;
@@ -88,34 +81,13 @@ void gen_header(FILE *fp) {
         get_virtual_regs(f->func->child->id, &first, fp);
     }
     fprintf(fp, ";\n\n");
-
-    // char varstr[200] = "\0";
-    // extern struct sym_table table;
-    // struct table_entry *en;
-    // int i;
-    // for (en=table.start; en; en=en->next) {
-    //     printf("here %s\n", en->name);
-    //     if (!en->is_func && !(isArithematicConst(en->name) || isBooleanConst(en->name))) {
-    //         strcat(varstr, en->name);
-    //         strcat(varstr, ", ");
-    //     }
-    // }
-    // for (i=199; i>=0; i--) {
-    //     if (varstr[i] == ',') {
-    //         varstr[i] = ';';
-    //         break;
-    //     }
-    // }
-    // if (varstr[0] != '\0') fprintf(fp, "int %s\n\n", varstr);
 }
 
 struct bblk *find_definition(struct bblk *blk, char reg[MAX_REG_LEN]){
     for (struct line *l = blk->lines; l; l = l->next){
         if (strstr(l->text, "IF")){
             char b1[MAX_LINE_SIZE] = "\0", b2[MAX_LINE_SIZE] = "\0", vi[MAX_REG_LEN] = "\0";
-            printf("|%s|\n", l->text);
             sscanf(l->text, "%[^,], then %s %[^\t\n]", b1, vi, b2);
-            printf("Match %s with %s\n", reg, vi);
             if (!strcmp(vi, reg)) return blk;
         }
         if (!strncmp(l->text, reg, strlen(reg))) return blk;
@@ -192,15 +164,7 @@ void generate_node_code(struct bblk *blk, FILE *fp, bool is_main) {
     // Generate code inside block
     for (struct line *l = blk->lines; l; l = l->next){
         char vi[MAX_REG_LEN], vd[MAX_REG_LEN], vt[MAX_REG_LEN], ve[MAX_REG_LEN];
-        if (strstr(l->text, "IF")){
-            // THIS NEEDS TO BE UPDATED TO USE GRAPH REACHABILITY ALGORITHM FROM CLASS
-            /*
-            sscanf(l->text, "IF %s = %[^,], then %s := %[^,], else %s := %s", vi, t1, vd, vt, vd, ve);
-            struct bblk *tblk = find_definition(blk, vt), *eblk = find_definition(blk, ve);
-            fprintf(fp, "\t\tif (%s) goto bb%d; else goto bb%d;\n", vi, tblk->node->id, eblk->node->id);
-            */
-        } else {
-            printf("%s\n",l->text);
+        if (!strstr(l->text, "IF")){
             sscanf(l->text, "%s := %[^\n]", vd, buf);
             if (!strcmp(buf, "false")) sprintf(buf, "0");
             if (!strcmp(buf, "true")) sprintf(buf, "1");
@@ -225,7 +189,6 @@ void generate_node_code(struct bblk *blk, FILE *fp, bool is_main) {
             while (strstr(buf, "and")){
                 strncpy(t1, buf, (strstr(buf, "and") - buf) - 1);
                 strcpy(t2, strstr(buf, "and") + 4);
-                printf("%s - %s\n", t1, t2);
                 sprintf(buf, "%s && %s", t1, t2);
             }
             while (strstr(buf, "or")){
@@ -288,12 +251,10 @@ void generate_node_code(struct bblk *blk, FILE *fp, bool is_main) {
 
 void gen_func(struct bblk *root, FILE *fp) {
     struct table_entry *e = st_get_func(root->node->token);
-    // printf("%s: %s\n", e->name, e->type ? "int" : "bool");
     char buf[MAX_LINE_SIZE] = "\0", text[MAX_LINE_SIZE] = "\0";
     sprintf(text, "int %s (", e->name);
     int first = 1;
     for (int i = 0; i < e->num_arg; i++){
-        // printf("\t%s: %s\n", find_ast_node(e->args[i].id)->token, e->args[i].type ? "int" : "bool");
         if (first){
            sprintf(buf, "int %s", find_ast_node(e->args[i].id)->token);
            first = 0;
@@ -320,13 +281,10 @@ void generate_c_code() {
     struct funcs *f;
     FILE *fp;
 
-    printf("start generating c code\n");
-
     // open file
     fp = fopen("output.c", "w");
 
-    // handle getint, getbool,
-    // virtual regs, func args, and local vars
+    // handle getint, getbool, virtual regs, func args, and local vars
     gen_header(fp);
     
     for (f = &cfgs; f->next; f = f->next);
@@ -334,23 +292,7 @@ void generate_c_code() {
         printf("Generating %s\n", f->func->lines->text);
         f == &cfgs ? gen_main(f->func, fp) : gen_func(f->func, fp);
     }
-    // // for all non mains
-    // for(f=&cfgs; f; f=f->next) {
-    //     if (strncmp(f->func->lines->text, "PEP", 3)) {
-    //         printf("generating %s\n", f->func->lines->text);
-    //         gen_func(f->func, fp);
-    //     }
-    // }
-    // // for main
-    // for(f=&cfgs; f; f=f->next) {
-    //     if (!strncmp(f->func->lines->text, "PEP", 3)) {
-    //         printf("generating %s\n", f->func->lines->text);
-    //         gen_main(f->func, fp);
-    //         break;
-    //     }
-    // }
 
     // close file
     fclose(fp);
-    printf("done generating c code\n");
 }
