@@ -275,7 +275,7 @@ void generate_node_code(struct bblk *blk, FILE *fp, bool is_main) {
     }
     else {
        if (is_main) {
-          fprintf(fp, "\t\tprintf(\"Output: %%d\\n\",v%d);\n", blk->node->id);
+          fprintf(fp, "\t\tprintf(\"Output: %%d\\n\",v%d);\n\t\treturn v%d;\n", blk->node->id, blk->node->id);
        }
        else {
           fprintf(fp, "\t\treturn v%d;\n", blk->node->id);
