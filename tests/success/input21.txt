@@ -1,0 +1,4 @@
+(define-fun f (a int) int (div a 2))
+(define-fun g (a int) (b bool) int
+(if (if b false true) (f a) 1))
+(print (g (get-int) (get-bool)))
