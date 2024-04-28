@@ -207,16 +207,20 @@ void generate_node_code(struct bblk *blk, FILE *fp, bool is_main) {
             if (!strcmp(buf, "getbool")) sprintf(buf, "get_bool()");
             if (!strcmp(buf, "getint")) sprintf(buf, "get_int()");
             if (strstr(buf, "mod")){
-                sscanf(buf, "%s mod %s", vd, vi);
-                sprintf(buf, "%s %% %s", vd, vi);
+                sscanf(buf, "%s mod %s", t1, t2);
+                sprintf(buf, "%s %% %s", t1, t2);
             }
             if (strstr(buf, "div")){
-                sscanf(buf, "%s div %s", vd, vi);
-                sprintf(buf, "%s / %s", vd, vi);
+                sscanf(buf, "%s div %s", t1, t2);
+                sprintf(buf, "%s / %s", t1, t2);
             }
             if (strstr(buf, "not")){
                 sscanf(buf, "not %s", t1);
                 sprintf(buf, "!%s", t1);
+            }
+            if (strstr(buf, "=")){
+                sscanf(buf, "%s = %s", t1, t2);
+                sprintf(buf, "%s == %s", t1, t2);
             }
             while (strstr(buf, "and")){
                 strncpy(t1, buf, (strstr(buf, "and") - buf) - 1);
